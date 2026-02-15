@@ -1,25 +1,29 @@
 # geosapiens-challenge
 
-This workspace is meant to be a monorepo with two top-level folders:
+Este repositório é um monorepo com duas pastas principais:
 
 - `backend/`: Spring Boot (Java 21) + Flyway + PostgreSQL
-- `frontend/`: React SPA
+- `frontend/`: SPA em React (Vite + TypeScript)
 
-## Run locally
+## Pré-requisitos
 
-Start the full stack (db + backend + frontend):
+- Docker + Docker Compose (ex.: Docker Desktop)
+
+## Rodar localmente
+
+Suba o stack completo (db + backend + frontend) a partir da raiz do repositório:
 
 ```powershell
 docker compose --env-file .env.example up --build
 ```
 
-Why `--env-file .env.example`?
+Por que `--env-file .env.example`?
 
-- We intentionally do not keep default/fallback values in `docker-compose.yml` and `backend/src/main/resources/application.yml` to avoid leaking configuration via code/commits.
-- The real `.env` is gitignored (so it won't exist in a clean clone).
-- For evaluation and local dev, `.env.example` provides non-secret local values and is used explicitly via `--env-file`.
+- Não mantemos valores default/fallback em `docker-compose.yml` e `backend/src/main/resources/application.yml` para evitar "vazar" configurações via código/commits.
+- O `.env` real é ignorado pelo Git (então não vai existir num clone limpo).
+- Para avaliação e desenvolvimento local, o `.env.example` contém valores não secretos e é carregado explicitamente com `--env-file`.
 
-Required environment variables (already filled in `.env.example`):
+Variáveis de ambiente necessárias (já preenchidas em `.env.example`):
 
 - `POSTGRES_IMAGE`
 - `POSTGRES_PORT`
@@ -32,7 +36,21 @@ Required environment variables (already filled in `.env.example`):
 - `APP_SEED`
 - `CORS_ALLOWED_ORIGINS`
 
-Default local URLs (from `.env.example`):
+URLs locais padrão (do `.env.example`):
 
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:8080` (API)
+
+## Comandos úteis
+
+Parar os containers:
+
+```powershell
+docker compose --env-file .env.example down
+```
+
+Resetar o banco (remove volumes):
+
+```powershell
+docker compose --env-file .env.example down -v
+```
