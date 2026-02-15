@@ -31,6 +31,8 @@ Concluído: adicionado healthcheck no `db` via `pg_isready` e no `backend` via `
 5. [x] Implementar migração Flyway `V1__create_assets_table.sql` criando a tabela `assets` com constraints (incluindo `serialNumber` único), timestamps e índices para paginação/filtros/busca.
 
 Concluído: criada a migration `backend/src/main/resources/db/migration/V1__create_assets_table.sql` com tabela `assets`, `serial_number` único, checks para `category/status`, check para `acquisition_date` não futura, e índices para `category/status/acquisition_date/name`.
+
+Revisão: adicionada a migration `backend/src/main/resources/db/migration/V2__update_asset_category_constraint.sql` para alinhar as categorias para `COMPUTER`, `PERIPHERAL`, `NETWORK_EQUIPMENT`, `SERVER_INFRA`, `MOBILE_DEVICE` (e mapear `MONITOR` -> `PERIPHERAL` se existir dado legado).
 6. [ ] Ajustar configurações do backend: unificar `application.yml`/`application.properties` para evitar divergências e ler conexão do banco via variáveis de ambiente (host/porta/db/usuário/senha), mantendo `ddl-auto: validate` para garantir aderência ao schema versionado.
 
 ## Backend (API REST de Assets)
@@ -42,7 +44,7 @@ Concluído: criada a migration `backend/src/main/resources/db/migration/V1__crea
 11. [ ] Implementar `POST /assets` (201), `PUT /assets/{id}` (200) e `DELETE /assets/{id}` (204) conforme contrato do PRD.
 12. [ ] Implementar tratamento global de erros (400/404/409) com payload consistente para validação, id inexistente e conflito (serial duplicado).
 13. [ ] Configurar CORS por ambiente (origens permitidas via env var) e garantir integração com o frontend local.
-14. [ ] Implementar seed local: ao iniciar, se não existir nenhum ativo, popular automaticamente com 200 itens fictícios cobrindo `Category` (COMPUTER, MONITOR, PERIPHERAL) e `Status` (IN_USE, IN_STOCK, MAINTENANCE, RETIRED), com datas de aquisição em faixa realista (ex.: últimos 5 anos) e `serialNumber` único, executando apenas em ambiente local (profile/env).
+14. [ ] Implementar seed local: ao iniciar, se não existir nenhum ativo, popular automaticamente com 200 itens fictícios cobrindo `Category` (COMPUTER, PERIPHERAL, NETWORK_EQUIPMENT, SERVER_INFRA, MOBILE_DEVICE) e `Status` (IN_USE, IN_STOCK, MAINTENANCE, RETIRED), com datas de aquisição em faixa realista (ex.: últimos 5 anos) e `serialNumber` único, executando apenas em ambiente local (profile/env).
 15. [ ] Garantir observabilidade básica: Actuator com health check habilitado e logs legíveis, e expor o health endpoint para uso no Compose.
 
 ## Frontend (React SPA)

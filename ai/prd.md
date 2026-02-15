@@ -139,7 +139,7 @@ Usuário interno que precisa manter inventário de ativos atualizado.
 **Requisito**
 * Ao subir localmente, se não existir nenhum ativo cadastrado, popular automaticamente com 200 ativos fictícios.
 * Os 200 itens devem cobrir:
-  * Categorias: COMPUTER, MONITOR, PERIPHERAL
+  * Categorias: COMPUTER, PERIPHERAL, NETWORK_EQUIPMENT, SERVER_INFRA, MOBILE_DEVICE
   * Status: IN_USE, IN_STOCK, MAINTENANCE, RETIRED
   * Datas de aquisição em faixa realista (exemplo: últimos 5 anos)
   * Número de série único por item
@@ -181,8 +181,10 @@ Usuário interno que precisa manter inventário de ativos atualizado.
 * `serialNumber` (string) obrigatório, único
 * `category` (enum) obrigatório
   * COMPUTER
-  * MONITOR
   * PERIPHERAL
+  * NETWORK_EQUIPMENT
+  * SERVER_INFRA
+  * MOBILE_DEVICE
 * `status` (enum) obrigatório
   * IN_USE
   * IN_STOCK
@@ -233,7 +235,7 @@ Sugestão de payload simplificado:
 {
   "name": "Monitor LG 27",
   "serialNumber": "SN-009999",
-  "category": "MONITOR",
+  "category": "PERIPHERAL",
   "status": "IN_STOCK",
   "acquisitionDate": "2023-10-01"
 }
