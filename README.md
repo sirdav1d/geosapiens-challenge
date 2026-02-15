@@ -3,25 +3,18 @@
 This workspace is meant to be a monorepo with two top-level folders:
 
 - `backend/`: Spring Boot (Java 21) + Flyway + PostgreSQL
-- `frontend/`: web app (to be added)
+- `frontend/`: React SPA
 
 ## Run locally
 
-1. Start PostgreSQL:
+Start the full stack (db + backend + frontend):
 
 ```powershell
-cd backend
-docker compose up -d
+docker compose up --build
 ```
 
-2. Run the backend:
+Defaults (from `docker-compose.yml` and `backend/src/main/resources/application.yml`):
 
-```powershell
-cd backend
-.\mvnw spring-boot:run
-```
-
-Defaults (from `backend/docker-compose.yml` and `backend/src/main/resources/application.yml`):
-
-- Backend: `http://localhost:8080`
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:8080` (API)
 - Postgres: `localhost:5432` (db `geosapiens`, user `admin`, password `admin`)

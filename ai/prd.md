@@ -6,7 +6,7 @@
 O repositório já contém uma base inicial, mas ainda não atende todos os requisitos abaixo.
 
 * Estrutura de monorepo com `backend/` e `frontend/` na raiz.
-* `backend/` em Spring Boot (Java 21) com configurações iniciais de PostgreSQL e Actuator, e um `backend/docker-compose.yml` que sobe apenas o banco.
+* `backend/` em Spring Boot (Java 21) com configurações iniciais de PostgreSQL e Actuator.
 * `frontend/` inicializado com Vite + React + TypeScript (template), ainda sem implementação do domínio de Assets.
 
 ## 1) Contexto e problema

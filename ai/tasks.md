@@ -16,9 +16,9 @@ Regras:
 
 Concluído: repo Git na raiz (monorepo), `.gitignore` raiz para `backend/` e `frontend/`, e backups de `.git` antigos em `.git-backup/`.
 
-2. [x] Consolidar Docker Compose: criar `docker-compose.yml` na raiz com serviços `db` (PostgreSQL), `backend` (Spring Boot) e `frontend` (build estático), aproveitando o `backend/docker-compose.yml` atual como base para o serviço `db`, e configurar via variáveis de ambiente (incluindo `VITE_API_URL`, credenciais do banco e flags de seed).
+2. [x] Consolidar Docker Compose: criar `docker-compose.yml` na raiz com serviços `db` (PostgreSQL), `backend` (Spring Boot) e `frontend` (build estático), e configurar via variáveis de ambiente (incluindo `VITE_API_URL`, credenciais do banco e flags de seed).
 
-Concluído: criado `docker-compose.yml` na raiz com `db`, `backend` e `frontend` usando env vars (inclui `VITE_API_URL`, credenciais do Postgres e placeholders `APP_SEED`/`CORS_ALLOWED_ORIGINS`) e adicionado `.env.example`. Validação: `docker compose config` ok.
+Concluído: criado `docker-compose.yml` na raiz com `db`, `backend` e `frontend` usando env vars (inclui `VITE_API_URL`, credenciais do Postgres e placeholders `APP_SEED`/`CORS_ALLOWED_ORIGINS`) e adicionado `.env.example`. Removido `backend/docker-compose.yml` para evitar fluxo parcial (subir só db). Validação: `docker compose config` ok.
 3. [ ] Criar `backend/Dockerfile` e `frontend/Dockerfile` para que `docker compose up --build` funcione sem dependências instaladas na máquina (Java/Node fora do Docker).
 4. [ ] Adicionar healthchecks e dependências de inicialização no Compose (db pronto antes do backend; backend pronto antes do frontend) para garantir subida estável.
 
