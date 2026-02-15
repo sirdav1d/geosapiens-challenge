@@ -11,9 +11,9 @@ spring:
     add-properties: false
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/geosapiens
-    username: admin
-    password: admin
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:geosapiens}
+    username: ${DB_USER:admin}
+    password: ${DB_PASSWORD:admin}
     driver-class-name: org.postgresql.Driver
 
   jpa:

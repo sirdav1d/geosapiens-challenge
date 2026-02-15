@@ -31,7 +31,9 @@ Concluído: adicionado healthcheck no `db` via `pg_isready` e no `backend` via `
 5. [x] Implementar migração Flyway `V1__create_assets_table.sql` criando a tabela `assets` com constraints (incluindo `serialNumber` único), timestamps e índices para paginação/filtros/busca.
 
 Concluído: criada a migration `backend/src/main/resources/db/migration/V1__create_assets_table.sql` com tabela `assets`, `serial_number` único, checks para `category/status`, check para `acquisition_date` não futura, e índices para `category/status/acquisition_date/name`. Categorias: `COMPUTER`, `PERIPHERAL`, `NETWORK_EQUIPMENT`, `SERVER_INFRA`, `MOBILE_DEVICE`.
-6. [ ] Ajustar configurações do backend: unificar `application.yml`/`application.properties` para evitar divergências e ler conexão do banco via variáveis de ambiente (host/porta/db/usuário/senha), mantendo `ddl-auto: validate` para garantir aderência ao schema versionado.
+6. [x] Ajustar configurações do backend: unificar `application.yml`/`application.properties` para evitar divergências e ler conexão do banco via variáveis de ambiente (host/porta/db/usuário/senha), mantendo `ddl-auto: validate` para garantir aderência ao schema versionado.
+
+Concluído: removido `backend/src/main/resources/application.properties` e padronizado `backend/src/main/resources/application.yml` com placeholders (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`). `docker-compose.yml` atualizado para passar essas variáveis para o backend.
 
 ## Backend (API REST de Assets)
 
