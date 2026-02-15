@@ -1,0 +1,61 @@
+# @format
+
+services:
+  db:
+    # Default pinned to a widely-available Postgres image; override with POSTGRES_IMAGE if desired.
+    image: ${POSTGRES_IMAGE:-postgres:16-alpine}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-geosapiens}
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    image: maven:3.9.9-eclipse-temurin-21
+    working_dir: /workspace
+    volumes:
+      - ./backend:/workspace
+      - maven_repo:/root/.m2
+    environment:
+      # Override the current backend config (which points to localhost) to use the Compose network.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-geosapiens}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-admin}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+      SERVER_PORT: 8080
+
+      # Placeholders for upcoming tasks (seed + CORS) so Compose already documents the knobs.
+      APP_SEED: ${APP_SEED:-true}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+    ports:
+      - '${BACKEND_PORT:-8080}:8080'
+    depends_on:
+      - db
+    command: ['mvn', 'spring-boot:run']
+
+  frontend:
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    environment:
+      # Used at build time by Vite to embed the API base URL in the bundle.
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    ports:
+      - '${FRONTEND_PORT:-5173}:5173'
+    depends_on:
+      - backend
+    command: >-
+      sh -c "corepack enable &&
+             pnpm install &&
+             pnpm build &&
+             pnpm preview --host 0.0.0.0 --port 5173"
+
+volumes:
+  db_data:
+  maven_repo:
+  frontend_node_modules:
+
