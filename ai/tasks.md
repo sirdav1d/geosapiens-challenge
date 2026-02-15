@@ -12,15 +12,18 @@ Regras:
 
 ## Infraestrutura e execução local (Docker)
 
-1. [ ] Validar a estrutura de monorepo com `backend/` e `frontend/` na raiz e padronizar `.gitignore`/nomenclaturas necessárias para trabalho e avaliação.
-2. [ ] Criar `docker-compose.yml` na raiz com serviços `db` (PostgreSQL), `backend` (Spring Boot) e `frontend` (build estático), com portas/URLs, rede e volumes definidos, e configuração via variáveis de ambiente (incluindo credenciais do banco e flags de seed).
+1. [x] Validar a estrutura de monorepo com `backend/` e `frontend/` na raiz e padronizar `.gitignore`/nomenclaturas necessárias para trabalho e avaliação.
+
+Concluído: repo Git na raiz (monorepo), `.gitignore` raiz para `backend/` e `frontend/`, e backups de `.git` antigos em `.git-backup/`.
+
+2. [ ] Consolidar Docker Compose: criar `docker-compose.yml` na raiz com serviços `db` (PostgreSQL), `backend` (Spring Boot) e `frontend` (build estático), aproveitando o `backend/docker-compose.yml` atual como base para o serviço `db`, e configurar via variáveis de ambiente (incluindo `VITE_API_URL`, credenciais do banco e flags de seed).
 3. [ ] Criar `backend/Dockerfile` e `frontend/Dockerfile` para que `docker compose up --build` funcione sem dependências instaladas na máquina (Java/Node fora do Docker).
 4. [ ] Adicionar healthchecks e dependências de inicialização no Compose (db pronto antes do backend; backend pronto antes do frontend) para garantir subida estável.
 
 ## Banco de dados e migrações (Flyway/PostgreSQL)
 
 5. [ ] Implementar migração Flyway `V1__create_assets_table.sql` criando a tabela `assets` com constraints (incluindo `serialNumber` único), timestamps e índices para paginação/filtros/busca.
-6. [ ] Ajustar configurações do backend para ler conexão do banco via variáveis de ambiente (host/porta/db/usuário/senha) e manter `ddl-auto: validate` para garantir aderência ao schema versionado.
+6. [ ] Ajustar configurações do backend: unificar `application.yml`/`application.properties` para evitar divergências e ler conexão do banco via variáveis de ambiente (host/porta/db/usuário/senha), mantendo `ddl-auto: validate` para garantir aderência ao schema versionado.
 
 ## Backend (API REST de Assets)
 
@@ -51,7 +54,7 @@ Regras:
 ## Integração, documentação e validação
 
 24. [ ] Validar integração full stack no Docker: frontend consumindo backend (env/proxy), backend consumindo o Postgres do Compose, e resolver CORS quando aplicável.
-25. [ ] Atualizar `README.md` com passo a passo plug and play (`docker compose up --build`), portas/URLs, variáveis de ambiente, como resetar o banco (opcional), como rodar/validar migrations e decisões técnicas principais.
+25. [ ] Atualizar `README.md` (raiz) com passo a passo plug and play (`docker compose up --build`), portas/URLs, variáveis de ambiente, como resetar o banco (opcional), como rodar/validar migrations e decisões técnicas principais (e remover/ajustar referências de templates quando aplicável).
 26. [ ] Criar checklist de testes manuais (curl/Insomnia + UI) cobrindo CRUD, paginação, filtros, busca e validações.
 27. [ ] Implementar testes básicos no backend (validação de DTOs e casos de erro 404/409) e garantir execução local.
 28. [ ] Executar smoke test final e checar critérios de aceitação do PRD: subir stack do zero, seed com 200 ativos, e fluxos completos na UI (listar/filtrar/buscar/paginar/criar/editar/excluir).

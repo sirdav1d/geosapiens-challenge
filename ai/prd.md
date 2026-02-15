@@ -1,4 +1,13 @@
+<!-- @format -->
+
 # PRD: Sistema de Gerenciamento de Ativos (Assets)
+
+## 0) Estado atual do repositório (baseline)
+O repositório já contém uma base inicial, mas ainda não atende todos os requisitos abaixo.
+
+* Estrutura de monorepo com `backend/` e `frontend/` na raiz.
+* `backend/` em Spring Boot (Java 21) com configurações iniciais de PostgreSQL e Actuator, e um `backend/docker-compose.yml` que sobe apenas o banco.
+* `frontend/` inicializado com Vite + React + TypeScript (template), ainda sem implementação do domínio de Assets.
 
 ## 1) Contexto e problema
 Empresas precisam controlar ativos como computadores, monitores e periféricos. Sem um sistema simples, isso vira planilha e caos: difícil saber o que existe, onde está, em que status está, e manter cadastro atualizado.
@@ -32,7 +41,7 @@ Empresas precisam controlar ativos como computadores, monitores e periféricos. 
 * Seed automático com 200 ativos no ambiente local quando o banco estiver vazio.
 
 **Execução local**
-* `docker compose up --build` sobe banco, backend e frontend.
+* `docker compose up --build` (executado na raiz do monorepo) sobe banco, backend e frontend.
 * README descreve execução e testes.
 
 ### 3.2 Fora do escopo
@@ -141,6 +150,8 @@ Usuário interno que precisa manter inventário de ativos atualizado.
 ### 5.4 Execução local com Docker Compose
 * Um comando para subir tudo:
   * `docker compose up --build`
+  * O comando deve ser executado na raiz do monorepo (onde ficará o `docker-compose.yml` principal).
+  * Não deve exigir Java/Node instalados fora do Docker (apenas Docker/Compose).
 * Serviços:
   * `db` (PostgreSQL)
   * `backend` (Spring Boot)

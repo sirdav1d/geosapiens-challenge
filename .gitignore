@@ -9,7 +9,7 @@ Thumbs.db
 .idea/
 *.iml
 
-# Monorepo conversion backup (see scripts/convert-to-monorepo.ps1)
+# Backup created during the monorepo conversion (kept out of Git history)
 .git-backup/
 
 # Backend (Java/Maven/Spring)
@@ -43,4 +43,3 @@ frontend/.env
 frontend/.env.local
 frontend/.env.*.local
 !frontend/.env.example
-
