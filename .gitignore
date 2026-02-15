@@ -34,6 +34,7 @@ frontend/.turbo/
 frontend/.vercel/
 frontend/.cache/
 frontend/coverage/
+**/.pnpm-store/
 
 # Env files (keep examples)
 .env

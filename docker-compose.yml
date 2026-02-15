@@ -11,7 +11,8 @@ services:
     ports:
       - '${POSTGRES_PORT:?POSTGRES_PORT is required}:5432'
     volumes:
-      - db_data:/var/lib/postgresql/data
+      # Postgres 18+ expects the volume mounted at /var/lib/postgresql (not /var/lib/postgresql/data).
+      - db_data:/var/lib/postgresql
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
       interval: 5s
