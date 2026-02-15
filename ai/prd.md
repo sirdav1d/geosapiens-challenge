@@ -155,7 +155,7 @@ Usuário interno que precisa manter inventário de ativos atualizado.
 * Serviços:
   * `db` (PostgreSQL)
   * `backend` (Spring Boot)
-  * `frontend` (build estático servido, exemplo: nginx)
+  * `frontend` (durante desenvolvimento: Vite dev server; na entrega: build estático servido, ex.: nginx)
 * README deve explicar:
   * portas
   * URLs locais
