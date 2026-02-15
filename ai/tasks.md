@@ -22,7 +22,9 @@ Concluído: criado `docker-compose.yml` na raiz com `db`, `backend` e `frontend`
 3. [x] Criar `backend/Dockerfile` e `frontend/Dockerfile` para que `docker compose up --build` funcione sem dependências instaladas na máquina (Java/Node fora do Docker).
 
 Concluído: criado `backend/Dockerfile` (build JAR com Maven e runtime em JRE) e `frontend/Dockerfile` (ambiente de dev com `pnpm dev`). Atualizado `docker-compose.yml` para usar `build:` nos serviços `backend` e `frontend` e habilitar volume de `node_modules` no frontend para HMR. Adicionados `.dockerignore`. (Opcional: `frontend/Dockerfile.prod` + `frontend/nginx.conf` para servir build estático mais perto da entrega.)
-4. [ ] Adicionar healthchecks e dependências de inicialização no Compose (db pronto antes do backend; backend pronto antes do frontend) para garantir subida estável.
+4. [x] Adicionar healthchecks e dependências de inicialização no Compose (db pronto antes do backend; backend pronto antes do frontend) para garantir subida estável.
+
+Concluído: adicionado healthcheck no `db` via `pg_isready` e no `backend` via `GET /actuator/health`, e atualizado `depends_on` para aguardar `service_healthy` (db -> backend -> frontend).
 
 ## Banco de dados e migrações (Flyway/PostgreSQL)
 

@@ -14,6 +14,8 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
+RUN apk add --no-cache curl
+
 COPY --from=builder /workspace/target/*.jar /app/app.jar
 
 EXPOSE 8080
@@ -21,4 +23,3 @@ EXPOSE 8080
 ENV JAVA_OPTS=""
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
-
