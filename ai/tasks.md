@@ -30,9 +30,7 @@ Concluído: adicionado healthcheck no `db` via `pg_isready` e no `backend` via `
 
 5. [x] Implementar migração Flyway `V1__create_assets_table.sql` criando a tabela `assets` com constraints (incluindo `serialNumber` único), timestamps e índices para paginação/filtros/busca.
 
-Concluído: criada a migration `backend/src/main/resources/db/migration/V1__create_assets_table.sql` com tabela `assets`, `serial_number` único, checks para `category/status`, check para `acquisition_date` não futura, e índices para `category/status/acquisition_date/name`.
-
-Revisão: adicionada a migration `backend/src/main/resources/db/migration/V2__update_asset_category_constraint.sql` para alinhar as categorias para `COMPUTER`, `PERIPHERAL`, `NETWORK_EQUIPMENT`, `SERVER_INFRA`, `MOBILE_DEVICE` (e mapear `MONITOR` -> `PERIPHERAL` se existir dado legado).
+Concluído: criada a migration `backend/src/main/resources/db/migration/V1__create_assets_table.sql` com tabela `assets`, `serial_number` único, checks para `category/status`, check para `acquisition_date` não futura, e índices para `category/status/acquisition_date/name`. Categorias: `COMPUTER`, `PERIPHERAL`, `NETWORK_EQUIPMENT`, `SERVER_INFRA`, `MOBILE_DEVICE`.
 6. [ ] Ajustar configurações do backend: unificar `application.yml`/`application.properties` para evitar divergências e ler conexão do banco via variáveis de ambiente (host/porta/db/usuário/senha), mantendo `ddl-auto: validate` para garantir aderência ao schema versionado.
 
 ## Backend (API REST de Assets)

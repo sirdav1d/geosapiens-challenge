@@ -10,7 +10,9 @@ CREATE TABLE assets (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT assets_serial_number_uk UNIQUE (serial_number),
-  CONSTRAINT assets_category_chk CHECK (category IN ('COMPUTER', 'MONITOR', 'PERIPHERAL')),
+  CONSTRAINT assets_category_chk CHECK (
+    category IN ('COMPUTER', 'PERIPHERAL', 'NETWORK_EQUIPMENT', 'SERVER_INFRA', 'MOBILE_DEVICE')
+  ),
   CONSTRAINT assets_status_chk CHECK (status IN ('IN_USE', 'IN_STOCK', 'MAINTENANCE', 'RETIRED')),
   CONSTRAINT assets_acquisition_date_chk CHECK (acquisition_date <= CURRENT_DATE)
 );
