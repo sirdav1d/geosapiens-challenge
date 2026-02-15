@@ -37,7 +37,9 @@ Concluído: removido `backend/src/main/resources/application.properties` e padro
 
 ## Backend (API REST de Assets)
 
-7. [ ] Implementar o modelo `Asset` (JPA) com `Category` e `Status` (enums) e campos `createdAt/updatedAt` conforme o PRD.
+7. [x] Implementar o modelo `Asset` (JPA) com `Category` e `Status` (enums) e campos `createdAt/updatedAt` conforme o PRD.
+
+Concluído: criado `Asset` (JPA) + enums `Category`/`Status` em `backend/src/main/java/com/geosapiens/backend/assets/`, com mapeamento para a tabela `assets` e timestamps `createdAt/updatedAt` via `@PrePersist/@PreUpdate`.
 8. [ ] Implementar DTOs de entrada/saída e validações de servidor: obrigatórios, data de aquisição não futura e valores permitidos para enums.
 9. [ ] Implementar camada de repositório/serviço com CRUD e regra de unicidade de `serialNumber` (retornando 409 em conflito).
 10. [ ] Implementar `GET /assets` aceitando `page` (padrão 0), `size` (padrão 20, máximo 100), `sort` opcional, `category`/`status` opcionais e `q` opcional (busca em `name` e `serialNumber`), aplicando filtros/busca antes da paginação e retornando `{ items, page, size, totalElements, totalPages }`.
