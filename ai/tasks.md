@@ -43,6 +43,7 @@ Concluído: criado `Asset` (JPA) + enums `Category`/`Status` em `backend/src/mai
 8. [x] Implementar DTOs de entrada/saída e validações de servidor: obrigatórios, data de aquisição não futura e valores permitidos para enums.
 
 Concluído: adicionados DTOs `AssetUpsertRequest` (validações com `@NotBlank`, `@NotNull`, `@Size`, `@PastOrPresent`) e `AssetResponse` em `backend/src/main/java/com/geosapiens/backend/assets/dto/`. Observação: `category`/`status` tipados como enums garantem valores permitidos na desserialização (inválidos retornam 400; payload consistente será tratado na Task 12).
+
 9. [ ] Implementar camada de repositório/serviço com CRUD e regra de unicidade de `serialNumber` (retornando 409 em conflito).
 10. [ ] Implementar `GET /assets` aceitando `page` (padrão 0), `size` (padrão 20, máximo 100), `sort` opcional, `category`/`status` opcionais e `q` opcional (busca em `name` e `serialNumber`), aplicando filtros/busca antes da paginação e retornando `{ items, page, size, totalElements, totalPages }`.
 11. [ ] Implementar `POST /assets` (201), `PUT /assets/{id}` (200) e `DELETE /assets/{id}` (204) conforme contrato do PRD.
