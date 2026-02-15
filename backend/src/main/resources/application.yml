@@ -1,0 +1,49 @@
+# @format
+
+spring:
+  application:
+    name: backend
+
+  main:
+    banner-mode: 'off'
+
+  devtools:
+    add-properties: false
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/geosapiens
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        '[format_sql]': false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    root: INFO
+    '[org.springframework]': WARN
+    '[org.hibernate]': WARN
+    '[org.flywaydb]': INFO
+    '[com.geosapiens.backend]': DEBUG
+
+  pattern:
+    console: '%d{HH:mm:ss} %-5level %logger{36} - %msg%n'

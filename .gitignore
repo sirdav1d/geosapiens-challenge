@@ -1,0 +1,46 @@
+# Root-level ignores for the combined backend/ + frontend/ workspace.
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Editors/IDEs
+.vscode/
+.idea/
+*.iml
+
+# Monorepo conversion backup (see scripts/convert-to-monorepo.ps1)
+.git-backup/
+
+# Backend (Java/Maven/Spring)
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/.classpath
+backend/.project
+backend/.settings/
+backend/.apt_generated
+backend/.factorypath
+backend/.springBeans
+backend/.sts4-cache
+backend/*.log
+
+# Frontend (Node/React/Next/Vite/etc.)
+frontend/node_modules/
+frontend/.next/
+frontend/.nuxt/
+frontend/dist/
+frontend/build/
+frontend/.turbo/
+frontend/.vercel/
+frontend/.cache/
+frontend/coverage/
+
+# Env files (keep examples)
+.env
+.env.local
+.env.*.local
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+!frontend/.env.example
+
