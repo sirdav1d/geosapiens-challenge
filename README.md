@@ -13,8 +13,20 @@ Start the full stack (db + backend + frontend):
 docker compose up --build
 ```
 
-Defaults (from `docker-compose.yml` and `backend/src/main/resources/application.yml`):
+Required environment variables (set them via a root `.env`, see `.env.example`):
 
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:8080` (API)
-- Postgres: `localhost:5432` (db `geosapiens`, user `admin`, password `admin`)
+- `POSTGRES_IMAGE`
+- `POSTGRES_PORT`
+- `POSTGRES_DB`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `BACKEND_PORT`
+- `FRONTEND_PORT`
+- `VITE_API_URL`
+- `APP_SEED`
+- `CORS_ALLOWED_ORIGINS`
+
+URLs depend on your port mapping:
+
+- Frontend: `http://localhost:<FRONTEND_PORT>`
+- Backend: `http://localhost:<BACKEND_PORT>` (API)
