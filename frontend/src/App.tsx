@@ -15,7 +15,7 @@ export default function App() {
 			<header className='mb-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
 				<div>
 					<h1 className='text-3xl font-semibold tracking-tight'>
-						Gerenciamento de Ativos
+						GeoSapiens Ativos
 					</h1>
 					<p className='mt-2 text-sm text-muted-foreground'>
 						Gerenciamento e listagem completa de ativos

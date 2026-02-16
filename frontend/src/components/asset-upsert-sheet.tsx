@@ -1,7 +1,7 @@
 /** @format */
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ptBR } from 'date-fns/locale';
+import { ptBR } from 'date-fns/locale/pt-BR';
 import { CalendarIcon } from 'lucide-react';
 import {
 	useCallback,
