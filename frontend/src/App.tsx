@@ -7,7 +7,7 @@ const AssetsListSection = lazy(
 	() => import('./components/assets-list-section'),
 );
 
-function App() {
+export default function App() {
 	return (
 		<main className='mx-auto max-h-screen max-w-6xl px-6 py-12'>
 			<header className='mb-8'>
@@ -51,5 +51,3 @@ function AssetsListFallback() {
 		</section>
 	);
 }
-
-export default App;

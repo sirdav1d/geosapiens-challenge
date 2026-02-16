@@ -15,7 +15,7 @@
 3. Se houver inconsistência, parar e pedir orientação, descrevendo a divergência e o impacto no MVP.
 4. Se estiver tudo ok, consultar o MCP Context7 (quando aplicável), criar um plano de execução (passos curtos, em ordem), justificar escolhas técnicas e solicitar aprovação.
 5. Após aprovação do plano, executar o plano.
-6. Validar manualmente com mcp chrome-devtools sempre que possível para verificar erros de implementação.
+6. Validar manualmente com mcp chrome-devtools ou Playwright sempre que possível para verificar erros de implementação.
 7. Ao concluir, atualizar `tasks.md`:
    - indicar que a task foi concluída;
    - colar um resumo do que foi feito logo abaixo da task (incluindo arquivos/rotas afetados e validações manuais);

@@ -37,15 +37,21 @@ import {
 } from '../helpers/assets-list';
 import { useDebouncedValue } from '../hooks/use-debounced-value';
 import { useAssetsQuery } from '../hooks/use-assets';
-import { AssetCreateSheet } from './asset-create-sheet';
+import AssetCreateSheet from './asset-create-sheet';
+import AssetDeleteDialog from './asset-delete-dialog';
+import AssetEditSheet from './asset-edit-sheet';
 import { createAssetColumns } from './assets-table/columns';
-import { DataTable } from './assets-table/data-table';
+import DataTable from './assets-table/data-table';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Button } from './ui/button';
 import { Skeleton } from './ui/skeleton';
 
-function AssetsListSection() {
+export default function AssetsListSection() {
 	const queryClient = useQueryClient();
+	const [assetToDelete, setAssetToDelete] = useState<Asset | null>(null);
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+	const [assetToEdit, setAssetToEdit] = useState<Asset | null>(null);
+	const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
 
 	const [pagination, setPagination] = useState<PaginationState>(() =>
 		readPaginationFromUrl(),
@@ -205,11 +211,27 @@ function AssetsListSection() {
 	]);
 
 	const handleEdit = useCallback((asset: Asset) => {
-		void asset;
+		setAssetToEdit(asset);
+		setIsEditSheetOpen(true);
+	}, []);
+
+	const handleEditSheetOpenChange = useCallback((nextOpen: boolean) => {
+		setIsEditSheetOpen(nextOpen);
+		if (!nextOpen) {
+			setAssetToEdit(null);
+		}
 	}, []);
 
 	const handleDelete = useCallback((asset: Asset) => {
-		void asset;
+		setAssetToDelete(asset);
+		setIsDeleteDialogOpen(true);
+	}, []);
+
+	const handleDeleteDialogOpenChange = useCallback((nextOpen: boolean) => {
+		setIsDeleteDialogOpen(nextOpen);
+		if (!nextOpen) {
+			setAssetToDelete(null);
+		}
 	}, []);
 	const columns = useMemo(
 		() =>
@@ -279,6 +301,16 @@ function AssetsListSection() {
 			<div className='flex justify-end'>
 				<AssetCreateSheet />
 			</div>
+			<AssetEditSheet
+				asset={assetToEdit}
+				open={isEditSheetOpen}
+				onOpenChange={handleEditSheetOpenChange}
+			/>
+			<AssetDeleteDialog
+				asset={assetToDelete}
+				open={isDeleteDialogOpen}
+				onOpenChange={handleDeleteDialogOpenChange}
+			/>
 			{content}
 		</section>
 	);
@@ -346,5 +378,3 @@ function AssetsListLoadingState() {
 		</section>
 	);
 }
-
-export default AssetsListSection;

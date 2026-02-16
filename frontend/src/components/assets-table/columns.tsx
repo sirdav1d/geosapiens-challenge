@@ -18,7 +18,7 @@ import { KeyboardIcon } from '../ui/keyboard';
 import { LaptopMinimalCheckIcon } from '../ui/laptop-minimal-check';
 import { SmartphoneNfcIcon } from '../ui/smartphone-nfc';
 import { WaypointsIcon } from '../ui/waypoints';
-import { AssetActionsMenu } from './asset-actions-menu';
+import AssetActionsMenu from './asset-actions-menu';
 
 export type AssetTableActions = {
 	onDelete: (asset: Asset) => void;

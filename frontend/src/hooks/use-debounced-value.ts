@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-function useDebouncedValue<TValue>(
+export function useDebouncedValue<TValue>(
 	value: TValue,
 	delayInMs: number,
 ): TValue {
@@ -20,6 +20,3 @@ function useDebouncedValue<TValue>(
 
 	return debouncedValue;
 }
-
-export { useDebouncedValue };
-

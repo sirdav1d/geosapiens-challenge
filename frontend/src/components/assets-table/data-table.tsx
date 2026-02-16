@@ -13,9 +13,7 @@ import {
 } from '@tanstack/react-table';
 import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
 import { useMemo } from 'react';
-import {
-	type Asset,
-} from '../../api/types';
+import { type Asset } from '../../api/types';
 import {
 	CATEGORY_LABELS,
 	CATEGORY_VALUES,
@@ -74,7 +72,7 @@ type DataTableProps = {
 	totalPages: number;
 };
 
-function DataTable({
+export default function DataTable({
 	columnFilters,
 	columns,
 	data,
@@ -123,11 +121,7 @@ function DataTable({
 	const visibleRows = rowModel.rows;
 	const pagesToRender = useMemo(
 		() =>
-			buildPageWindow(
-				currentPage,
-				totalPages,
-				ASSETS_TABLE_MAX_VISIBLE_PAGES,
-			),
+			buildPageWindow(currentPage, totalPages, ASSETS_TABLE_MAX_VISIBLE_PAGES),
 		[currentPage, totalPages],
 	);
 	const canPreviousPage = table.getCanPreviousPage();
@@ -404,5 +398,3 @@ function DataTable({
 		</div>
 	);
 }
-
-export { DataTable };

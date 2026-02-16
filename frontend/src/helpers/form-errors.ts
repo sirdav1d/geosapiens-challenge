@@ -14,7 +14,7 @@ type HandleApiFormErrorOptions<TFieldValues extends FieldValues> = {
 	unexpectedMessage?: string;
 };
 
-function handleApiFormError<TFieldValues extends FieldValues>(
+export function handleApiFormError<TFieldValues extends FieldValues>(
 	error: unknown,
 	options: HandleApiFormErrorOptions<TFieldValues>,
 ): void {
@@ -73,5 +73,3 @@ function isAllowedField<TFieldValues extends FieldValues>(
 ): field is Path<TFieldValues> {
 	return allowedFields.some((allowedField) => allowedField === field);
 }
-
-export { handleApiFormError };

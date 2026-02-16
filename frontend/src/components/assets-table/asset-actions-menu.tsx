@@ -19,7 +19,11 @@ type AssetActionsMenuProps = {
 	onEdit: (asset: Asset) => void;
 };
 
-function AssetActionsMenu({ asset, onDelete, onEdit }: AssetActionsMenuProps) {
+export default function AssetActionsMenu({
+	asset,
+	onDelete,
+	onEdit,
+}: AssetActionsMenuProps) {
 	const editIconRef = useRef<SquarePenIconHandle>(null);
 	const deleteIconRef = useRef<DeleteIconHandle>(null);
 
@@ -66,5 +70,3 @@ function AssetActionsMenu({ asset, onDelete, onEdit }: AssetActionsMenuProps) {
 		</DropdownMenu>
 	);
 }
-
-export { AssetActionsMenu };
