@@ -1,35 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+/** @format */
+
+import { lazy, Suspense } from 'react';
+import { Skeleton } from './components/ui/skeleton';
+
+const AssetsListSection = lazy(
+	() => import('./components/assets-list-section'),
+);
 
 function App() {
-  const [count, setCount] = useState(0)
+	return (
+		<main className='mx-auto max-h-screen max-w-6xl px-6 py-12'>
+			<header className='mb-8'>
+				<h1 className='text-3xl font-semibold tracking-tight'>
+					GeoSapiens Assets
+				</h1>
+				<p className='mt-2 text-sm text-muted-foreground'>
+					Listagem de ativos GeoSapiens
+				</p>
+			</header>
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+			<Suspense fallback={<AssetsListFallback />}>
+				<AssetsListSection />
+			</Suspense>
+		</main>
+	);
 }
 
-export default App
+function AssetsListFallback() {
+	return (
+		<section className='space-y-4'>
+			<div className='flex flex-col gap-3 md:flex-row md:items-center'>
+				<Skeleton className='h-9 w-full md:max-w-sm' />
+				<div className='flex gap-2 md:ml-auto'>
+					<Skeleton className='h-9 w-[220px]' />
+					<Skeleton className='h-9 w-[180px]' />
+				</div>
+			</div>
+			<div className='space-y-2 rounded-lg border p-4'>
+				<Skeleton className='h-8 w-full' />
+				<Skeleton className='h-8 w-full' />
+				<Skeleton className='h-8 w-full' />
+				<Skeleton className='h-8 w-full' />
+				<Skeleton className='h-8 w-full' />
+				<Skeleton className='h-8 w-full' />
+				<Skeleton className='h-8 w-full' />
+				<Skeleton className='h-8 w-full' />
+				<Skeleton className='h-8 w-full' />
+				<Skeleton className='h-8 w-full' />
+			</div>
+		</section>
+	);
+}
+
+export default App;

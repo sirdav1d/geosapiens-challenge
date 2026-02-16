@@ -9,9 +9,16 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
 public record AssetUpsertRequest(
-    @NotBlank @Size(max = 255) String name,
-    @NotBlank @Size(max = 128) String serialNumber,
-    @NotNull Category category,
-    @NotNull Status status,
-    @NotNull @PastOrPresent LocalDate acquisitionDate) {}
-
+    @NotBlank(message = "Nome é obrigatório.")
+    @Size(max = 255, message = "Nome deve ter no máximo 255 caracteres.")
+    String name,
+    @NotBlank(message = "Número de série é obrigatório.")
+    @Size(max = 128, message = "Número de série deve ter no máximo 128 caracteres.")
+    String serialNumber,
+    @NotNull(message = "Categoria é obrigatória.")
+    Category category,
+    @NotNull(message = "Status é obrigatório.")
+    Status status,
+    @NotNull(message = "Data de aquisição é obrigatória.")
+    @PastOrPresent(message = "Data de aquisição não pode ser futura.")
+    LocalDate acquisitionDate) {}

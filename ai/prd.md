@@ -69,7 +69,7 @@ Usuário interno que precisa manter inventário de ativos atualizado.
 
 ### 5.1 Frontend
 **Listagem**
-* Exibir tabela com colunas principais.
+* Exibir tabela com colunas principais usando TanStack Table (headless).
 * Filtros:
   * Categoria
   * Status
@@ -99,6 +99,8 @@ Usuário interno que precisa manter inventário de ativos atualizado.
 **Integração**
 * Consumir a API do backend com base em uma env var:
   * `VITE_API_URL`
+* Gerenciar estado de servidor com TanStack Query (queries, mutations e invalidação de cache).
+* Gerenciar modelo/estado da tabela com TanStack Table, priorizando modo manual (server-side) para paginação, filtros e ordenação.
 * Tratar:
   * Loading
   * Erros HTTP (400, 404, 409)
@@ -295,6 +297,12 @@ Mesmo formato do POST.
 * Backend pode ser hospedado em VPS ou plataforma de containers.
 * Banco pode ser gerenciado ou em VPS.
 * Este deploy é opcional, não critério principal.
+
+### 10.3 Decisões de stack (Frontend)
+* Base: React + TypeScript + Vite.
+* Dados remotos e cache: TanStack Query.
+* Tabela (headless): TanStack Table.
+* Componentes visuais: shadcn/ui quando aplicável.
 
 ## 11) Plano de entrega
 

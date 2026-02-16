@@ -40,7 +40,11 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ['CMD-SHELL', 'curl -fsS http://localhost:8080/actuator/health > /dev/null']
+      test:
+        [
+          'CMD-SHELL',
+          'curl -fsS http://localhost:8080/actuator/health > /dev/null',
+        ]
       interval: 10s
       timeout: 3s
       retries: 30
