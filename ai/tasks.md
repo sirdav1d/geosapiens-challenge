@@ -116,7 +116,10 @@ Concluído: adicionado seletor de `itens por página` (10/20/50) na tabela, inte
 
 ## Frontend (Fluxos de CRUD)
 
-21. [ ] Implementar formulário de criação (nome, número de série, categoria, status, data de aquisição) com validação no cliente (obrigatórios e data não futura) e integração com `POST /assets`.
+21. [x] Implementar formulário de criação (nome, número de série, categoria, status, data de aquisição) com validação no cliente (obrigatórios e data não futura) e integração com `POST /assets`.
+
+Concluído: implementado formulário de criação em `Sheet` com `react-hook-form` + `zod` e validações de cliente para campos obrigatórios e data de aquisição não futura, com integração ao `POST /assets` via `useCreateAssetMutation`. Também foi adicionado tratamento de erros `400` (mapeamento de erros de campo) e `409` (conflito de número de série), estado de loading no submit e reset controlado ao fechar o formulário. Arquivos: `frontend/src/components/asset-create-sheet.tsx`, `frontend/src/components/assets-list-section.tsx`, `frontend/package.json`, `frontend/pnpm-lock.yaml`. Validação: `pnpm --dir frontend lint` e `pnpm --dir frontend build` ok.
+
 22. [ ] Implementar formulário de edição com validação no cliente e integração com `PUT /assets/{id}`.
 23. [ ] Implementar exclusão com confirmação e atualização da listagem após `DELETE /assets/{id}`.
 

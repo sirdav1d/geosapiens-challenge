@@ -13,8 +13,23 @@ import {
 } from '@tanstack/react-table';
 import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
 import { useMemo } from 'react';
-import type { Asset, Category } from '../../api/types';
+import {
+	type Asset,
+} from '../../api/types';
+import {
+	CATEGORY_LABELS,
+	CATEGORY_VALUES,
+	STATUS_LABELS,
+	STATUS_VALUES,
+} from '../../constants/assets';
+import {
+	ASSETS_TABLE_MAX_VISIBLE_PAGES,
+	ASSETS_TABLE_ROW_CLASSNAME,
+	ASSETS_TABLE_ROW_LAYOUT_TRANSITION,
+	ASSETS_TABLE_ROW_OPACITY_TRANSITION,
+} from '../../constants/assets-table';
 import { PAGE_SIZE_OPTIONS } from '../../constants/pagination';
+import { buildPageWindow } from '../../helpers/pagination';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import {
@@ -42,22 +57,7 @@ import {
 	TableRow,
 } from '../ui/table';
 import { XIcon } from '../ui/x';
-import { categoryIcons, categoryLabels, statusLabels } from './columns';
-
-const TABLE_ROW_CLASSNAME =
-	'hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors will-change-transform';
-
-const TABLE_ROW_LAYOUT_TRANSITION = {
-	type: 'spring',
-	stiffness: 420,
-	damping: 34,
-	mass: 0.8,
-} as const;
-
-const TABLE_ROW_OPACITY_TRANSITION = {
-	duration: 0.14,
-	ease: 'easeOut',
-} as const;
+import { categoryIcons } from './columns';
 
 type DataTableProps = {
 	columnFilters: ColumnFiltersState;
@@ -122,7 +122,12 @@ function DataTable({
 	const rowModel = table.getRowModel();
 	const visibleRows = rowModel.rows;
 	const pagesToRender = useMemo(
-		() => buildPageWindow(currentPage, totalPages, 5),
+		() =>
+			buildPageWindow(
+				currentPage,
+				totalPages,
+				ASSETS_TABLE_MAX_VISIBLE_PAGES,
+			),
 		[currentPage, totalPages],
 	);
 	const canPreviousPage = table.getCanPreviousPage();
@@ -168,9 +173,8 @@ function DataTable({
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value='ALL'>Todas as categorias</SelectItem>
-							{(
-								Object.entries(categoryLabels) as Array<[Category, string]>
-							).map(([value, label]) => {
+							{CATEGORY_VALUES.map((value) => {
+								const label = CATEGORY_LABELS[value];
 								const CategoryIcon = categoryIcons[value];
 
 								return (
@@ -202,11 +206,11 @@ function DataTable({
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value='ALL'>Todos os status</SelectItem>
-							{Object.entries(statusLabels).map(([value, label]) => (
+							{STATUS_VALUES.map((value) => (
 								<SelectItem
 									key={value}
 									value={value}>
-									{label}
+									{STATUS_LABELS[value]}
 								</SelectItem>
 							))}
 						</SelectContent>
@@ -274,12 +278,12 @@ function DataTable({
 											prefersReducedMotion
 												? { duration: 0 }
 												: {
-														layout: TABLE_ROW_LAYOUT_TRANSITION,
-														opacity: TABLE_ROW_OPACITY_TRANSITION,
+														layout: ASSETS_TABLE_ROW_LAYOUT_TRANSITION,
+														opacity: ASSETS_TABLE_ROW_OPACITY_TRANSITION,
 													}
 										}
 										data-slot='table-row'
-										className={TABLE_ROW_CLASSNAME}>
+										className={ASSETS_TABLE_ROW_CLASSNAME}>
 										{row.getVisibleCells().map((cell) => (
 											<TableCell key={cell.id}>
 												{flexRender(
@@ -399,52 +403,6 @@ function DataTable({
 			</div>
 		</div>
 	);
-}
-
-type PageWindowItem = number | 'ellipsis';
-
-function buildPageWindow(
-	currentPage: number,
-	totalPages: number,
-	maxVisiblePages: number,
-): PageWindowItem[] {
-	if (totalPages <= 0) {
-		return [];
-	}
-
-	if (totalPages <= maxVisiblePages) {
-		return Array.from({ length: totalPages }, (_, index) => index);
-	}
-
-	const half = Math.floor(maxVisiblePages / 2);
-	let start = Math.max(0, currentPage - half);
-	const end = Math.min(totalPages - 1, start + maxVisiblePages - 1);
-
-	if (end - start + 1 < maxVisiblePages) {
-		start = Math.max(0, end - maxVisiblePages + 1);
-	}
-
-	const pages: PageWindowItem[] = [];
-
-	if (start > 0) {
-		pages.push(0);
-		if (start > 1) {
-			pages.push('ellipsis');
-		}
-	}
-
-	for (let pageIndex = start; pageIndex <= end; pageIndex += 1) {
-		pages.push(pageIndex);
-	}
-
-	if (end < totalPages - 1) {
-		if (end < totalPages - 2) {
-			pages.push('ellipsis');
-		}
-		pages.push(totalPages - 1);
-	}
-
-	return pages;
 }
 
 export { DataTable };

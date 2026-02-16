@@ -2,7 +2,16 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import type { ComponentType } from 'react';
-import type { Asset, Category, Status } from '../../api/types';
+import {
+	CATEGORY_LABELS,
+	STATUS_LABELS,
+} from '../../constants/assets';
+import {
+	type Asset,
+	type Category,
+	type Status,
+} from '../../api/types';
+import { formatLocalDate } from '../../helpers/date';
 import { Badge } from '../ui/badge';
 import { CpuIcon } from '../ui/cpu';
 import { KeyboardIcon } from '../ui/keyboard';
@@ -16,21 +25,6 @@ export type AssetTableActions = {
 	onEdit: (asset: Asset) => void;
 };
 
-export const categoryLabels: Record<Category, string> = {
-	COMPUTER: 'Computador',
-	PERIPHERAL: 'Periférico',
-	NETWORK_EQUIPMENT: 'Equipamento de rede',
-	SERVER_INFRA: 'Infra de servidor',
-	MOBILE_DEVICE: 'Dispositivo móvel',
-};
-
-export const statusLabels: Record<Status, string> = {
-	IN_USE: 'Em uso',
-	IN_STOCK: 'Em estoque',
-	MAINTENANCE: 'Manutenção',
-	RETIRED: 'Descartado',
-};
-
 type StatusBadgeVariant = 'default' | 'secondary' | 'outline' | 'destructive';
 
 const statusBadgeVariants: Record<Status, StatusBadgeVariant> = {
@@ -39,8 +33,6 @@ const statusBadgeVariants: Record<Status, StatusBadgeVariant> = {
 	MAINTENANCE: 'outline',
 	RETIRED: 'destructive',
 };
-
-const dateFormatter = new Intl.DateTimeFormat('pt-BR');
 
 type CategoryIconProps = {
 	className?: string;
@@ -87,7 +79,7 @@ export function createAssetColumns({
 							size={16}
 							className='shrink-0 text-muted-foreground'
 						/>
-						<span>{categoryLabels[category]}</span>
+						<span>{CATEGORY_LABELS[category]}</span>
 					</div>
 				);
 			},
@@ -99,7 +91,7 @@ export function createAssetColumns({
 				const status = row.original.status;
 				return (
 					<Badge variant={statusBadgeVariants[status]}>
-						{statusLabels[status]}
+						{STATUS_LABELS[status]}
 					</Badge>
 				);
 			},
@@ -123,12 +115,4 @@ export function createAssetColumns({
 			),
 		},
 	];
-}
-
-function formatLocalDate(value: string): string {
-	const date = new Date(`${value}T00:00:00`);
-	if (Number.isNaN(date.getTime())) {
-		return value;
-	}
-	return dateFormatter.format(date);
 }

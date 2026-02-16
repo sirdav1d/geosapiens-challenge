@@ -1,11 +1,18 @@
 /** @format */
-
 import {
-	keepPreviousData,
-	useMutation,
-	useQuery,
-	useQueryClient,
-} from '@tanstack/react-query';
+	API_ACCEPT_HEADER,
+	API_CONTENT_TYPE_HEADER,
+	API_JSON_CONTENT_TYPE,
+	ASSETS_API_PATH,
+	ASSETS_LIST_QUERY_KEY,
+	ASSETS_QUERY_KEY,
+	HTTP_ERROR_MESSAGE_PREFIX,
+	VITE_API_URL_ENV_NAME,
+} from '../constants/api';
+import {
+	DEFAULT_PAGE_INDEX,
+	DEFAULT_PAGE_SIZE,
+} from '../constants/pagination';
 import type {
 	ApiErrorResponse,
 	Asset,
@@ -20,7 +27,7 @@ type Primitive = string | number | boolean;
 type QueryValue = Primitive | Primitive[] | null | undefined;
 type QueryParams = Record<string, QueryValue>;
 
-type NormalizedAssetsQueryParams = {
+export type NormalizedAssetsQueryParams = {
 	page: number;
 	size: number;
 	sort?: string[];
@@ -46,58 +53,11 @@ export class ApiHttpError extends Error {
 }
 
 export const assetsQueryKeys = {
-	all: ['assets'] as const,
-	lists: () => [...assetsQueryKeys.all, 'list'] as const,
+	all: [ASSETS_QUERY_KEY] as const,
+	lists: () => [...assetsQueryKeys.all, ASSETS_LIST_QUERY_KEY] as const,
 	list: (params: NormalizedAssetsQueryParams) =>
 		[...assetsQueryKeys.lists(), params] as const,
 };
-
-export function useAssetsQuery(params: AssetsQueryParams = {}) {
-	const normalizedParams = normalizeAssetsQueryParams(params);
-
-	return useQuery<AssetsPageResponse, ApiHttpError>({
-		queryKey: assetsQueryKeys.list(normalizedParams),
-		queryFn: ({ signal }) => fetchAssets(normalizedParams, signal),
-		placeholderData: keepPreviousData,
-	});
-}
-
-export function useCreateAssetMutation() {
-	const queryClient = useQueryClient();
-
-	return useMutation<Asset, ApiHttpError, AssetUpsertRequest>({
-		mutationFn: createAsset,
-		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: assetsQueryKeys.lists() });
-		},
-	});
-}
-
-export function useUpdateAssetMutation() {
-	const queryClient = useQueryClient();
-
-	return useMutation<
-		Asset,
-		ApiHttpError,
-		{ id: number; payload: AssetUpsertRequest }
-	>({
-		mutationFn: ({ id, payload }) => updateAsset(id, payload),
-		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: assetsQueryKeys.lists() });
-		},
-	});
-}
-
-export function useDeleteAssetMutation() {
-	const queryClient = useQueryClient();
-
-	return useMutation<void, ApiHttpError, number>({
-		mutationFn: deleteAsset,
-		onSuccess: () => {
-			void queryClient.invalidateQueries({ queryKey: assetsQueryKeys.lists() });
-		},
-	});
-}
 
 export function fetchAssets(
 	params: AssetsQueryParams = {},
@@ -105,7 +65,7 @@ export function fetchAssets(
 ): Promise<AssetsPageResponse> {
 	const normalizedParams = normalizeAssetsQueryParams(params);
 
-	return request<AssetsPageResponse>('/assets', {
+	return request<AssetsPageResponse>(ASSETS_API_PATH, {
 		method: 'GET',
 		query: {
 			page: normalizedParams.page,
@@ -120,7 +80,7 @@ export function fetchAssets(
 }
 
 export function createAsset(payload: AssetUpsertRequest): Promise<Asset> {
-	return request<Asset>('/assets', {
+	return request<Asset>(ASSETS_API_PATH, {
 		method: 'POST',
 		body: payload,
 	});
@@ -130,14 +90,14 @@ export function updateAsset(
 	id: number,
 	payload: AssetUpsertRequest,
 ): Promise<Asset> {
-	return request<Asset>(`/assets/${id}`, {
+	return request<Asset>(`${ASSETS_API_PATH}/${id}`, {
 		method: 'PUT',
 		body: payload,
 	});
 }
 
 export function deleteAsset(id: number): Promise<void> {
-	return request<void>(`/assets/${id}`, {
+	return request<void>(`${ASSETS_API_PATH}/${id}`, {
 		method: 'DELETE',
 	});
 }
@@ -163,7 +123,9 @@ async function request<TResponse>(
 
 function resolveApiBaseUrl(value: string | undefined): string {
 	if (!value || !value.trim()) {
-		throw new Error('A variável de ambiente VITE_API_URL é obrigatória.');
+		throw new Error(
+			`A variável de ambiente ${VITE_API_URL_ENV_NAME} é obrigatória.`,
+		);
 	}
 	return value.trim().replace(/\/+$/, '');
 }
@@ -209,9 +171,9 @@ function appendQueryValue(
 
 function buildHeaders(hasBody: boolean): Headers {
 	const headers = new Headers();
-	headers.set('Accept', 'application/json');
+	headers.set(API_ACCEPT_HEADER, API_JSON_CONTENT_TYPE);
 	if (hasBody) {
-		headers.set('Content-Type', 'application/json');
+		headers.set(API_CONTENT_TYPE_HEADER, API_JSON_CONTENT_TYPE);
 	}
 	return headers;
 }
@@ -224,11 +186,12 @@ async function parseResponse<TResponse>(
 	}
 
 	const contentType = response.headers.get('content-type') ?? '';
-	if (contentType.includes('application/json')) {
+	if (contentType.includes(API_JSON_CONTENT_TYPE)) {
 		const payload = (await response.json()) as TResponse | ApiErrorResponse;
 		if (!response.ok) {
 			const details = payload as ApiErrorResponse;
-			const message = details.message || `Erro HTTP ${response.status}.`;
+			const message =
+				details.message || `${HTTP_ERROR_MESSAGE_PREFIX} ${response.status}.`;
 			throw new ApiHttpError(response.status, message, details);
 		}
 		return payload as TResponse;
@@ -238,14 +201,14 @@ async function parseResponse<TResponse>(
 	if (!response.ok) {
 		throw new ApiHttpError(
 			response.status,
-			textPayload || `Erro HTTP ${response.status}.`,
+			textPayload || `${HTTP_ERROR_MESSAGE_PREFIX} ${response.status}.`,
 		);
 	}
 
 	return undefined as TResponse;
 }
 
-function normalizeAssetsQueryParams(
+export function normalizeAssetsQueryParams(
 	params: AssetsQueryParams,
 ): NormalizedAssetsQueryParams {
 	const sort = Array.isArray(params.sort)
@@ -255,8 +218,8 @@ function normalizeAssetsQueryParams(
 			: undefined;
 
 	return {
-		page: params.page ?? 0,
-		size: params.size ?? 20,
+		page: params.page ?? DEFAULT_PAGE_INDEX,
+		size: params.size ?? DEFAULT_PAGE_SIZE,
 		sort: sort && sort.length > 0 ? sort : undefined,
 		category: params.category,
 		status: params.status,

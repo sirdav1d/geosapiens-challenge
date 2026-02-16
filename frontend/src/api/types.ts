@@ -1,11 +1,7 @@
-export type Category =
-  | "COMPUTER"
-  | "PERIPHERAL"
-  | "NETWORK_EQUIPMENT"
-  | "SERVER_INFRA"
-  | "MOBILE_DEVICE";
+import { CATEGORY_VALUES, STATUS_VALUES } from '../constants/assets';
 
-export type Status = "IN_USE" | "IN_STOCK" | "MAINTENANCE" | "RETIRED";
+export type Category = (typeof CATEGORY_VALUES)[number];
+export type Status = (typeof STATUS_VALUES)[number];
 
 export interface Asset {
   id: number;

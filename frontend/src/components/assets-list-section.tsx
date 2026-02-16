@@ -7,43 +7,42 @@ import type {
 } from '@tanstack/react-table';
 import { functionalUpdate } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { AlertCircleIcon } from 'lucide-react';
 import {
-	ApiHttpError,
 	assetsQueryKeys,
 	fetchAssets,
-	useAssetsQuery,
 } from '../api/assets';
-import type { ApiFieldError, Asset, Category, Status } from '../api/types';
+import {
+	type ApiFieldError,
+	type Asset,
+	type Category,
+	type Status,
+} from '../api/types';
+import {
+	ASSETS_URL_PARAM_KEYS,
+	SEARCH_DEBOUNCE_IN_MS,
+} from '../constants/assets-list';
 import {
 	DEFAULT_PAGE_INDEX,
 	DEFAULT_PAGE_SIZE,
-	isAllowedPageSize,
 } from '../constants/pagination';
+import {
+	getColumnFilterValue,
+	readColumnFiltersFromUrl,
+	readPaginationFromUrl,
+	readSearchQueryFromUrl,
+	resolveAssetsError,
+	setOrDeleteParam,
+} from '../helpers/assets-list';
 import { useDebouncedValue } from '../hooks/use-debounced-value';
+import { useAssetsQuery } from '../hooks/use-assets';
+import { AssetCreateSheet } from './asset-create-sheet';
 import { createAssetColumns } from './assets-table/columns';
 import { DataTable } from './assets-table/data-table';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Button } from './ui/button';
 import { Skeleton } from './ui/skeleton';
-
-const SEARCH_DEBOUNCE_IN_MS = 400;
-
-const CATEGORY_VALUES: Category[] = [
-	'COMPUTER',
-	'PERIPHERAL',
-	'NETWORK_EQUIPMENT',
-	'SERVER_INFRA',
-	'MOBILE_DEVICE',
-];
-
-const STATUS_VALUES: Status[] = [
-	'IN_USE',
-	'IN_STOCK',
-	'MAINTENANCE',
-	'RETIRED',
-];
 
 function AssetsListSection() {
 	const queryClient = useQueryClient();
@@ -88,21 +87,21 @@ function AssetsListSection() {
 
 		setOrDeleteParam(
 			params,
-			'page',
+			ASSETS_URL_PARAM_KEYS.page,
 			pagination.pageIndex > DEFAULT_PAGE_INDEX
 				? String(pagination.pageIndex)
 				: undefined,
 		);
 		setOrDeleteParam(
 			params,
-			'size',
+			ASSETS_URL_PARAM_KEYS.size,
 			pagination.pageSize !== DEFAULT_PAGE_SIZE
 				? String(pagination.pageSize)
 				: undefined,
 		);
-		setOrDeleteParam(params, 'q', searchQuery || undefined);
-		setOrDeleteParam(params, 'category', categoryFilter);
-		setOrDeleteParam(params, 'status', statusFilter);
+		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.query, searchQuery || undefined);
+		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.category, categoryFilter);
+		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.status, statusFilter);
 
 		const nextSearch = params.toString();
 		const currentSearch = window.location.search.replace(/^\?/, '');
@@ -223,12 +222,12 @@ function AssetsListSection() {
 
 	const errorState = isError ? resolveAssetsError(error) : undefined;
 
-	if (isLoading && !data) {
-		return <AssetsListLoadingState />;
-	}
+	let content: ReactNode;
 
-	if (isError && !data && errorState) {
-		return (
+	if (isLoading && !data) {
+		content = <AssetsListLoadingState />;
+	} else if (isError && !data && errorState) {
+		content = (
 			<AssetsListErrorState
 				description={errorState.description}
 				fieldErrors={errorState.fieldErrors}
@@ -236,186 +235,53 @@ function AssetsListSection() {
 				title={errorState.title}
 			/>
 		);
+	} else {
+		content = (
+			<>
+				{isFetching && data && (
+					<p className='text-sm text-muted-foreground'>Atualizando ativos...</p>
+				)}
+
+				{isError && data && errorState && (
+					<Alert variant='destructive'>
+						<AlertCircleIcon />
+						<AlertTitle>{errorState.title}</AlertTitle>
+						<AlertDescription>
+							<p>{errorState.description}</p>
+						</AlertDescription>
+					</Alert>
+				)}
+
+				{data && (
+					<div className='space-y-3'>
+						<DataTable
+							columns={columns}
+							data={data.items}
+							globalFilter={globalFilter}
+							columnFilters={columnFilters}
+							onGlobalFilterChange={handleGlobalFilterChange}
+							onColumnFiltersChange={handleColumnFiltersChange}
+							pagination={pagination}
+							onPaginationChange={handlePaginationChange}
+							totalElements={data.totalElements}
+							totalPages={data.totalPages}
+							hasActiveFilters={hasActiveFilters}
+							onClearFilters={handleClearFilters}
+						/>
+					</div>
+				)}
+			</>
+		);
 	}
 
 	return (
 		<section className='space-y-4'>
-			{isFetching && data && (
-				<p className='text-sm text-muted-foreground'>Atualizando ativos...</p>
-			)}
-
-			{isError && data && errorState && (
-				<Alert variant='destructive'>
-					<AlertCircleIcon />
-					<AlertTitle>{errorState.title}</AlertTitle>
-					<AlertDescription>
-						<p>{errorState.description}</p>
-					</AlertDescription>
-				</Alert>
-			)}
-
-			{data && (
-				<div className='space-y-3'>
-					<DataTable
-						columns={columns}
-						data={data.items}
-						globalFilter={globalFilter}
-						columnFilters={columnFilters}
-						onGlobalFilterChange={handleGlobalFilterChange}
-						onColumnFiltersChange={handleColumnFiltersChange}
-						pagination={pagination}
-						onPaginationChange={handlePaginationChange}
-						totalElements={data.totalElements}
-						totalPages={data.totalPages}
-						hasActiveFilters={hasActiveFilters}
-						onClearFilters={handleClearFilters}
-					/>
-				</div>
-			)}
+			<div className='flex justify-end'>
+				<AssetCreateSheet />
+			</div>
+			{content}
 		</section>
 	);
-}
-
-function getColumnFilterValue<TValue extends string>(
-	filters: ColumnFiltersState,
-	columnId: string,
-): TValue | undefined {
-	const filter = filters.find((item) => item.id === columnId);
-	if (!filter || typeof filter.value !== 'string' || !filter.value.trim()) {
-		return undefined;
-	}
-	return filter.value as TValue;
-}
-
-function readPaginationFromUrl(): PaginationState {
-	const params = getUrlSearchParams();
-	const pageIndex = parseIntegerParam(params.get('page'));
-	const pageSize = parseIntegerParam(params.get('size'));
-
-	return {
-		pageIndex:
-			pageIndex !== undefined && pageIndex >= 0
-				? pageIndex
-				: DEFAULT_PAGE_INDEX,
-		pageSize:
-			pageSize !== undefined && isAllowedPageSize(pageSize)
-				? pageSize
-				: DEFAULT_PAGE_SIZE,
-	};
-}
-
-function readSearchQueryFromUrl(): string {
-	const queryParam = getUrlSearchParams().get('q');
-	return queryParam?.trim() ?? '';
-}
-
-function readColumnFiltersFromUrl(): ColumnFiltersState {
-	const params = getUrlSearchParams();
-	const filters: ColumnFiltersState = [];
-
-	const category = parseCategoryParam(params.get('category'));
-	const status = parseStatusParam(params.get('status'));
-
-	if (category) {
-		filters.push({ id: 'category', value: category });
-	}
-	if (status) {
-		filters.push({ id: 'status', value: status });
-	}
-
-	return filters;
-}
-
-function getUrlSearchParams(): URLSearchParams {
-	if (typeof window === 'undefined') {
-		return new URLSearchParams();
-	}
-	return new URLSearchParams(window.location.search);
-}
-
-function parseIntegerParam(value: string | null): number | undefined {
-	if (!value || value.trim().length === 0) {
-		return undefined;
-	}
-
-	const parsedValue = Number(value);
-	if (!Number.isInteger(parsedValue)) {
-		return undefined;
-	}
-
-	return parsedValue;
-}
-
-function parseCategoryParam(value: string | null): Category | undefined {
-	if (!value) {
-		return undefined;
-	}
-
-	return CATEGORY_VALUES.find((category) => category === value);
-}
-
-function parseStatusParam(value: string | null): Status | undefined {
-	if (!value) {
-		return undefined;
-	}
-
-	return STATUS_VALUES.find((status) => status === value);
-}
-
-function setOrDeleteParam(
-	params: URLSearchParams,
-	key: string,
-	value: string | undefined,
-): void {
-	if (value === undefined || value.trim().length === 0) {
-		params.delete(key);
-		return;
-	}
-	params.set(key, value);
-}
-
-type AssetsErrorState = {
-	description: string;
-	fieldErrors: ApiFieldError[];
-	title: string;
-};
-
-function resolveAssetsError(error: ApiHttpError): AssetsErrorState {
-	const fieldErrors = error.details?.errors ?? [];
-
-	if (error.status === 400) {
-		return {
-			title: 'Parâmetros inválidos',
-			description:
-				'A consulta foi rejeitada pelo servidor. Revise filtros, busca e paginação.',
-			fieldErrors,
-		};
-	}
-
-	if (error.status === 404) {
-		return {
-			title: 'Recurso não encontrado',
-			description:
-				'Não foi possível encontrar o recurso solicitado. Atualize a página e tente novamente.',
-			fieldErrors,
-		};
-	}
-
-	if (error.status === 409) {
-		return {
-			title: 'Conflito de dados',
-			description:
-				'Detectamos um conflito no servidor. Atualize a listagem antes de continuar.',
-			fieldErrors,
-		};
-	}
-
-	return {
-		title: 'Erro ao carregar ativos',
-		description:
-			error.message || 'Ocorreu um erro inesperado ao consultar os ativos.',
-		fieldErrors,
-	};
 }
 
 type AssetsListErrorStateProps = {
