@@ -4,6 +4,7 @@ import type {
 	ColumnFiltersState,
 	OnChangeFn,
 	PaginationState,
+	SortingState,
 } from '@tanstack/react-table';
 import { functionalUpdate } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
@@ -32,12 +33,12 @@ import {
 	readColumnFiltersFromUrl,
 	readPaginationFromUrl,
 	readSearchQueryFromUrl,
+	readSortingFromUrl,
 	resolveAssetsError,
 	setOrDeleteParam,
 } from '../helpers/assets-list';
 import { useDebouncedValue } from '../hooks/use-debounced-value';
 import { useAssetsQuery } from '../hooks/use-assets';
-import AssetCreateSheet from './asset-create-sheet';
 import AssetDeleteDialog from './asset-delete-dialog';
 import AssetEditSheet from './asset-edit-sheet';
 import { createAssetColumns } from './assets-table/columns';
@@ -63,6 +64,7 @@ export default function AssetsListSection() {
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() =>
 		readColumnFiltersFromUrl(),
 	);
+	const [sorting, setSorting] = useState<SortingState>(() => readSortingFromUrl());
 
 	const categoryFilter = getColumnFilterValue<Category>(
 		columnFilters,
@@ -78,6 +80,10 @@ export default function AssetsListSection() {
 		immediateQueryText.length === 0
 			? undefined
 			: debouncedQueryText || undefined;
+	const sortParams = useMemo(
+		() => sorting.map((sortItem) => `${sortItem.id},${sortItem.desc ? 'desc' : 'asc'}`),
+		[sorting],
+	);
 	const hasActiveFilters =
 		immediateQueryText.length > 0 ||
 		categoryFilter !== undefined ||
@@ -108,6 +114,7 @@ export default function AssetsListSection() {
 		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.query, searchQuery || undefined);
 		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.category, categoryFilter);
 		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.status, statusFilter);
+		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.sort, sortParams[0]);
 
 		const nextSearch = params.toString();
 		const currentSearch = window.location.search.replace(/^\?/, '');
@@ -124,6 +131,7 @@ export default function AssetsListSection() {
 		immediateQueryText,
 		pagination.pageIndex,
 		pagination.pageSize,
+		sortParams,
 		statusFilter,
 	]);
 
@@ -159,6 +167,17 @@ export default function AssetsListSection() {
 		);
 	};
 
+	const handleSortingChange: OnChangeFn<SortingState> = (updaterOrValue) => {
+		setSorting((previousSorting) => {
+			const nextSorting = functionalUpdate(updaterOrValue, previousSorting).slice(0, 1);
+			setPagination((previousPagination) => ({
+				...previousPagination,
+				pageIndex: 0,
+			}));
+			return nextSorting;
+		});
+	};
+
 	const handleClearFilters = useCallback(() => {
 		setGlobalFilter('');
 		setColumnFilters([]);
@@ -175,6 +194,7 @@ export default function AssetsListSection() {
 			q: queryText,
 			category: categoryFilter,
 			status: statusFilter,
+			sort: sortParams.length > 0 ? sortParams : undefined,
 		});
 
 	useEffect(() => {
@@ -194,6 +214,7 @@ export default function AssetsListSection() {
 			q: queryText,
 			category: categoryFilter,
 			status: statusFilter,
+			sort: sortParams.length > 0 ? sortParams : undefined,
 		};
 
 		void queryClient.prefetchQuery({
@@ -207,6 +228,7 @@ export default function AssetsListSection() {
 		pagination.pageSize,
 		queryClient,
 		queryText,
+		sortParams,
 		statusFilter,
 	]);
 
@@ -285,6 +307,8 @@ export default function AssetsListSection() {
 							onColumnFiltersChange={handleColumnFiltersChange}
 							pagination={pagination}
 							onPaginationChange={handlePaginationChange}
+							sorting={sorting}
+							onSortingChange={handleSortingChange}
 							totalElements={data.totalElements}
 							totalPages={data.totalPages}
 							hasActiveFilters={hasActiveFilters}
@@ -298,9 +322,6 @@ export default function AssetsListSection() {
 
 	return (
 		<section className='space-y-4'>
-			<div className='flex justify-end'>
-				<AssetCreateSheet />
-			</div>
 			<AssetEditSheet
 				asset={assetToEdit}
 				open={isEditSheetOpen}

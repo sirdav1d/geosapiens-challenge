@@ -48,7 +48,6 @@ public class AssetController {
     this.assetService = assetService;
   }
 
-  // GET
   @GetMapping
   public AssetsPageResponse list(
       @RequestParam(required = false) Category category,
@@ -95,24 +94,29 @@ public class AssetController {
     assetService.delete(id);
   }
 
-  // GET - SORTED
   private static Sort parseSort(List<String> sortParams) {
     if (sortParams == null || sortParams.isEmpty()) {
       return Sort.by(Sort.Order.desc("id"));
     }
 
-    List<Sort.Order> orders = new ArrayList<>();
+    List<String> sortTokens = new ArrayList<>();
     for (String raw : sortParams) {
       if (raw == null || raw.isBlank()) {
         continue;
       }
 
-      String[] parts = raw.split(",", -1);
-      String property = parts[0].trim();
-
-      if (property.isEmpty()) {
-        continue;
+      for (String token : raw.split(",", -1)) {
+        String normalizedToken = token.trim();
+        if (normalizedToken.isEmpty()) {
+          continue;
+        }
+        sortTokens.add(normalizedToken);
       }
+    }
+
+    List<Sort.Order> orders = new ArrayList<>();
+    for (int index = 0; index < sortTokens.size(); index++) {
+      String property = sortTokens.get(index);
 
       if (!ALLOWED_SORT_FIELDS.contains(property)) {
         throw new ResponseStatusException(
@@ -120,15 +124,18 @@ public class AssetController {
       }
 
       Sort.Direction direction = Sort.Direction.ASC;
-      if (parts.length >= 2 && !parts[1].isBlank()) {
-        String dir = parts[1].trim().toUpperCase(Locale.ROOT);
-        if ("ASC".equals(dir)) {
+      if (index + 1 < sortTokens.size()) {
+        String nextToken = sortTokens.get(index + 1);
+        String normalizedDirection = nextToken.toUpperCase(Locale.ROOT);
+        if ("ASC".equals(normalizedDirection)) {
           direction = Sort.Direction.ASC;
-        } else if ("DESC".equals(dir)) {
+          index++;
+        } else if ("DESC".equals(normalizedDirection)) {
           direction = Sort.Direction.DESC;
-        } else {
+          index++;
+        } else if (!ALLOWED_SORT_FIELDS.contains(nextToken)) {
           throw new ResponseStatusException(
-              HttpStatus.BAD_REQUEST, "Direção de `sort` inválida: " + parts[1].trim());
+              HttpStatus.BAD_REQUEST, "Direção de `sort` inválida: " + nextToken);
         }
       }
 
@@ -141,4 +148,5 @@ public class AssetController {
 
     return Sort.by(orders);
   }
+
 }

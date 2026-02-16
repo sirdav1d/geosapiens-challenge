@@ -5,6 +5,7 @@ import type {
 	ColumnFiltersState,
 	OnChangeFn,
 	PaginationState,
+	SortingState,
 } from '@tanstack/react-table';
 import {
 	flexRender,
@@ -20,6 +21,7 @@ import {
 	STATUS_LABELS,
 	STATUS_VALUES,
 } from '../../constants/assets';
+import { CATEGORY_ICONS } from '../../constants/category-icons';
 import {
 	ASSETS_TABLE_MAX_VISIBLE_PAGES,
 	ASSETS_TABLE_ROW_CLASSNAME,
@@ -55,7 +57,6 @@ import {
 	TableRow,
 } from '../ui/table';
 import { XIcon } from '../ui/x';
-import { categoryIcons } from './columns';
 
 type DataTableProps = {
 	columnFilters: ColumnFiltersState;
@@ -67,7 +68,9 @@ type DataTableProps = {
 	onClearFilters: () => void;
 	onGlobalFilterChange: OnChangeFn<string>;
 	onPaginationChange: OnChangeFn<PaginationState>;
+	onSortingChange: OnChangeFn<SortingState>;
 	pagination: PaginationState;
+	sorting: SortingState;
 	totalElements: number;
 	totalPages: number;
 };
@@ -82,7 +85,9 @@ export default function DataTable({
 	onClearFilters,
 	onGlobalFilterChange,
 	onPaginationChange,
+	onSortingChange,
 	pagination,
+	sorting,
 	totalElements,
 	totalPages,
 }: DataTableProps) {
@@ -97,12 +102,15 @@ export default function DataTable({
 			globalFilter,
 			columnFilters,
 			pagination,
+			sorting,
 		},
 		onGlobalFilterChange,
 		onColumnFiltersChange,
 		onPaginationChange,
+		onSortingChange,
 		manualFiltering: true,
 		manualPagination: true,
+		manualSorting: true,
 		rowCount: totalElements,
 		pageCount: totalPages,
 		getCoreRowModel: getCoreRowModel(),
@@ -127,7 +135,10 @@ export default function DataTable({
 	const canPreviousPage = table.getCanPreviousPage();
 	const canNextPage = table.getCanNextPage();
 	const currentPageSize = table.getState().pagination.pageSize;
-	const tableLayoutDependency = `${currentPage}-${categoryFilterValue}-${statusFilterValue}-${table.getState().globalFilter}-${visibleRows.length}`;
+	const sortingDependency = sorting
+		.map((item) => `${item.id}:${item.desc ? 'desc' : 'asc'}`)
+		.join('|');
+	const tableLayoutDependency = `${currentPage}-${categoryFilterValue}-${statusFilterValue}-${table.getState().globalFilter}-${sortingDependency}-${visibleRows.length}`;
 
 	return (
 		<div className='space-y-3'>
@@ -169,7 +180,7 @@ export default function DataTable({
 							<SelectItem value='ALL'>Todas as categorias</SelectItem>
 							{CATEGORY_VALUES.map((value) => {
 								const label = CATEGORY_LABELS[value];
-								const CategoryIcon = categoryIcons[value];
+								const CategoryIcon = CATEGORY_ICONS[value];
 
 								return (
 									<SelectItem

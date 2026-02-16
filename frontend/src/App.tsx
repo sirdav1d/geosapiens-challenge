@@ -1,7 +1,9 @@
 /** @format */
 
 import { lazy, Suspense } from 'react';
+import AssetCreateSheet from './components/asset-create-sheet';
 import { Skeleton } from './components/ui/skeleton';
+import { AnimatedThemeToggler } from './components/ui/animated-theme-toggler';
 
 const AssetsListSection = lazy(
 	() => import('./components/assets-list-section'),
@@ -10,13 +12,19 @@ const AssetsListSection = lazy(
 export default function App() {
 	return (
 		<main className='mx-auto max-h-screen max-w-6xl px-6 py-12'>
-			<header className='mb-8'>
-				<h1 className='text-3xl font-semibold tracking-tight'>
-					GeoSapiens Assets
-				</h1>
-				<p className='mt-2 text-sm text-muted-foreground'>
-					Listagem de ativos GeoSapiens
-				</p>
+			<header className='mb-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
+				<div>
+					<h1 className='text-3xl font-semibold tracking-tight'>
+						Gerenciamento de Ativos
+					</h1>
+					<p className='mt-2 text-sm text-muted-foreground'>
+						Gerenciamento e listagem completa de ativos
+					</p>
+				</div>
+				<div className='flex items-center gap-5'>
+					<AssetCreateSheet />
+					<AnimatedThemeToggler />
+				</div>
 			</header>
 
 			<Suspense fallback={<AssetsListFallback />}>

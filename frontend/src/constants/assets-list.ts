@@ -8,7 +8,7 @@ const ASSETS_URL_PARAM_KEYS = {
 	query: 'q',
 	category: 'category',
 	status: 'status',
+	sort: 'sort',
 } as const;
 
 export { ASSETS_URL_PARAM_KEYS, SEARCH_DEBOUNCE_IN_MS };
-

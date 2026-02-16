@@ -1,23 +1,33 @@
 /** @format */
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { ptBR } from 'date-fns/locale';
+import { CalendarIcon } from 'lucide-react';
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+	type ReactNode,
+} from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import type {
-	Asset,
-	AssetUpsertRequest,
-	Category,
-	Status,
-} from '../api/types';
+import type { Asset, AssetUpsertRequest, Category, Status } from '../api/types';
 import {
 	CATEGORY_LABELS,
 	CATEGORY_VALUES,
 	STATUS_LABELS,
 	STATUS_VALUES,
 } from '../constants/assets';
+import { CATEGORY_ICONS } from '../constants/category-icons';
 import { ASSET_CREATE_FIELDS } from '../constants/asset-form';
-import { getTodayDateInputValue, isValidDateInput } from '../helpers/date';
+import {
+	formatLocalDate,
+	getTodayDateInputValue,
+	isValidDateInput,
+	parseDateInput,
+	toDateInputValue,
+} from '../helpers/date';
 import { isEnumValue } from '../helpers/enum';
 import { handleApiFormError } from '../helpers/form-errors';
 import {
@@ -25,7 +35,9 @@ import {
 	useUpdateAssetMutation,
 } from '../hooks/use-assets';
 import { Button } from './ui/button';
+import { Calendar } from './ui/calendar';
 import { Input } from './ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import {
 	Select,
 	SelectContent,
@@ -44,14 +56,8 @@ import {
 } from './ui/sheet';
 
 const assetUpsertSchema = z.object({
-	name: z
-		.string()
-		.trim()
-		.min(1, 'Nome é obrigatório.'),
-	serialNumber: z
-		.string()
-		.trim()
-		.min(1, 'Número de série é obrigatório.'),
+	name: z.string().trim().min(1, 'Nome é obrigatório.'),
+	serialNumber: z.string().trim().min(1, 'Número de série é obrigatório.'),
 	category: z
 		.string()
 		.min(1, 'Categoria é obrigatória.')
@@ -118,7 +124,10 @@ export default function AssetUpsertSheet({
 	const isEditMode = mode === 'edit';
 	const isSubmitting =
 		createAssetMutation.isPending || updateAssetMutation.isPending;
-	const maxDate = useMemo(() => getTodayDateInputValue(), []);
+	const maxSelectableDate = useMemo(
+		() => parseDateInput(getTodayDateInputValue()) ?? new Date(),
+		[],
+	);
 
 	const resolvedOpen = open ?? internalOpen;
 	const setResolvedOpen = useCallback(
@@ -246,7 +255,7 @@ export default function AssetUpsertSheet({
 				side='right'
 				className='overflow-y-auto sm:max-w-md'>
 				<SheetHeader>
-					<SheetTitle>{title}</SheetTitle>
+					<SheetTitle className='text-xl'>{title}</SheetTitle>
 					<SheetDescription>{description}</SheetDescription>
 				</SheetHeader>
 
@@ -309,18 +318,29 @@ export default function AssetUpsertSheet({
 									onValueChange={field.onChange}
 									disabled={isSubmitting}>
 									<SelectTrigger
+										className='w-full'
 										id='asset-category'
 										aria-invalid={fieldState.invalid}>
 										<SelectValue placeholder='Selecione uma categoria' />
 									</SelectTrigger>
 									<SelectContent>
-										{CATEGORY_VALUES.map((category) => (
-											<SelectItem
-												key={category}
-												value={category}>
-												{CATEGORY_LABELS[category]}
-											</SelectItem>
-										))}
+										{CATEGORY_VALUES.map((category) => {
+											const CategoryIcon = CATEGORY_ICONS[category];
+
+											return (
+												<SelectItem
+													key={category}
+													value={category}>
+													<div className='flex items-center gap-2'>
+														<CategoryIcon
+															size={14}
+															className='shrink-0 text-muted-foreground'
+														/>
+														<span>{CATEGORY_LABELS[category]}</span>
+													</div>
+												</SelectItem>
+											);
+										})}
 									</SelectContent>
 								</Select>
 								{fieldState.error?.message && (
@@ -347,6 +367,7 @@ export default function AssetUpsertSheet({
 									onValueChange={field.onChange}
 									disabled={isSubmitting}>
 									<SelectTrigger
+										className='w-full'
 										id='asset-status'
 										aria-invalid={fieldState.invalid}>
 										<SelectValue placeholder='Selecione um status' />
@@ -370,26 +391,65 @@ export default function AssetUpsertSheet({
 						)}
 					/>
 
-					<div className='space-y-2'>
-						<label
-							htmlFor='asset-acquisition-date'
-							className='text-sm font-medium'>
-							Data de aquisição
-						</label>
-						<Input
-							id='asset-acquisition-date'
-							type='date'
-							max={maxDate}
-							aria-invalid={Boolean(form.formState.errors.acquisitionDate)}
-							disabled={isSubmitting}
-							{...form.register('acquisitionDate')}
-						/>
-						{form.formState.errors.acquisitionDate?.message && (
-							<p className='text-sm text-destructive'>
-								{form.formState.errors.acquisitionDate.message}
-							</p>
-						)}
-					</div>
+					<Controller
+						control={form.control}
+						name='acquisitionDate'
+						render={({ field, fieldState }) => {
+							const selectedDate = parseDateInput(field.value);
+							const hasSelectedDate = selectedDate !== undefined;
+
+							return (
+								<div className='space-y-2'>
+									<label
+										htmlFor='asset-acquisition-date'
+										className='text-sm font-medium'>
+										Data de aquisição
+									</label>
+									<Popover>
+										<PopoverTrigger asChild>
+											<Button
+												id='asset-acquisition-date'
+												type='button'
+												variant='outline'
+												aria-invalid={fieldState.invalid}
+												disabled={isSubmitting}
+												className={[
+													'w-full justify-start text-left font-normal',
+													!hasSelectedDate ? 'text-muted-foreground' : '',
+												].join(' ')}>
+												<CalendarIcon className='size-4 text-muted-foreground' />
+												{hasSelectedDate
+													? formatLocalDate(field.value)
+													: 'Selecione a data de aquisição'}
+											</Button>
+										</PopoverTrigger>
+										<PopoverContent
+											className='w-auto p-0'
+											align='start'>
+											<Calendar
+												mode='single'
+												locale={ptBR}
+												selected={selectedDate}
+												onSelect={(selectedValue) => {
+													if (!selectedValue) {
+														return;
+													}
+													field.onChange(toDateInputValue(selectedValue));
+												}}
+												disabled={(date) => date > maxSelectableDate}
+												initialFocus
+											/>
+										</PopoverContent>
+									</Popover>
+									{fieldState.error?.message && (
+										<p className='text-sm text-destructive'>
+											{fieldState.error.message}
+										</p>
+									)}
+								</div>
+							);
+						}}
+					/>
 
 					{formErrorMessage && (
 						<p className='text-sm text-destructive'>{formErrorMessage}</p>
@@ -397,13 +457,6 @@ export default function AssetUpsertSheet({
 				</form>
 
 				<SheetFooter>
-					<Button
-						type='button'
-						variant='outline'
-						disabled={isSubmitting}
-						onClick={() => handleOpenChange(false)}>
-						Cancelar
-					</Button>
 					<Button
 						type='submit'
 						form={formId}

@@ -1,23 +1,19 @@
-/** @format */
+﻿/** @format */
 
 import type { ColumnDef } from '@tanstack/react-table';
-import type { ComponentType } from 'react';
+import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon } from 'lucide-react';
 import {
 	CATEGORY_LABELS,
 	STATUS_LABELS,
 } from '../../constants/assets';
+import { CATEGORY_ICONS } from '../../constants/category-icons';
 import {
 	type Asset,
-	type Category,
 	type Status,
 } from '../../api/types';
 import { formatLocalDate } from '../../helpers/date';
 import { Badge } from '../ui/badge';
-import { CpuIcon } from '../ui/cpu';
-import { KeyboardIcon } from '../ui/keyboard';
-import { LaptopMinimalCheckIcon } from '../ui/laptop-minimal-check';
-import { SmartphoneNfcIcon } from '../ui/smartphone-nfc';
-import { WaypointsIcon } from '../ui/waypoints';
+import { Button } from '../ui/button';
 import AssetActionsMenu from './asset-actions-menu';
 
 export type AssetTableActions = {
@@ -27,27 +23,13 @@ export type AssetTableActions = {
 
 type StatusBadgeVariant = 'default' | 'secondary' | 'outline' | 'destructive';
 
+type SortDirection = false | 'asc' | 'desc';
+
 const statusBadgeVariants: Record<Status, StatusBadgeVariant> = {
 	IN_USE: 'default',
 	IN_STOCK: 'secondary',
 	MAINTENANCE: 'outline',
 	RETIRED: 'destructive',
-};
-
-type CategoryIconProps = {
-	className?: string;
-	size?: number;
-};
-
-export const categoryIcons: Record<
-	Category,
-	ComponentType<CategoryIconProps>
-> = {
-	COMPUTER: LaptopMinimalCheckIcon,
-	PERIPHERAL: KeyboardIcon,
-	NETWORK_EQUIPMENT: WaypointsIcon,
-	SERVER_INFRA: CpuIcon,
-	MOBILE_DEVICE: SmartphoneNfcIcon,
 };
 
 export function createAssetColumns({
@@ -57,7 +39,12 @@ export function createAssetColumns({
 	return [
 		{
 			accessorKey: 'name',
-			header: 'Nome',
+			header: ({ column }) =>
+				renderSortableHeaderButton({
+					columnLabel: 'Nome',
+					onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+					sortDirection: column.getIsSorted(),
+				}),
 			cell: ({ row }) => (
 				<span className='font-medium'>{row.original.name}</span>
 			),
@@ -71,7 +58,7 @@ export function createAssetColumns({
 			header: 'Categoria',
 			cell: ({ row }) => {
 				const category = row.original.category;
-				const CategoryIcon = categoryIcons[category];
+				const CategoryIcon = CATEGORY_ICONS[category];
 
 				return (
 					<div className='inline-flex items-center gap-2'>
@@ -98,7 +85,12 @@ export function createAssetColumns({
 		},
 		{
 			accessorKey: 'acquisitionDate',
-			header: 'Aquisição',
+			header: ({ column }) =>
+				renderSortableHeaderButton({
+					columnLabel: 'Aquisição',
+					onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+					sortDirection: column.getIsSorted(),
+				}),
 			cell: ({ row }) => formatLocalDate(row.original.acquisitionDate),
 		},
 		{
@@ -115,4 +107,32 @@ export function createAssetColumns({
 			),
 		},
 	];
+}
+
+type SortableHeaderButtonProps = {
+	columnLabel: string;
+	onClick: () => void;
+	sortDirection: SortDirection;
+};
+
+function renderSortableHeaderButton({
+	columnLabel,
+	onClick,
+	sortDirection,
+}: SortableHeaderButtonProps) {
+	return (
+		<Button
+			type='button'
+			variant='ghost'
+			size='sm'
+			className='-ml-3 h-8'
+			onClick={onClick}>
+			{columnLabel}
+			{sortDirection === 'asc' && <ArrowUpIcon className='size-4' />}
+			{sortDirection === 'desc' && <ArrowDownIcon className='size-4' />}
+			{sortDirection === false && (
+				<ArrowUpDownIcon className='size-4 text-muted-foreground' />
+			)}
+		</Button>
+	);
 }

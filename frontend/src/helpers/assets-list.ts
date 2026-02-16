@@ -3,6 +3,7 @@
 import type {
 	ColumnFiltersState,
 	PaginationState,
+	SortingState,
 } from '@tanstack/react-table';
 import { ApiHttpError } from '../api/assets';
 import {
@@ -70,6 +71,21 @@ function readColumnFiltersFromUrl(): ColumnFiltersState {
 	}
 
 	return filters;
+}
+
+function readSortingFromUrl(): SortingState {
+	const params = getUrlSearchParams();
+	const sorting: SortingState = [];
+	const sortParams = params.getAll(ASSETS_URL_PARAM_KEYS.sort);
+
+	for (const rawSort of sortParams) {
+		const parsedSort = parseSortParam(rawSort);
+		if (parsedSort) {
+			sorting.push(parsedSort);
+		}
+	}
+
+	return sorting.slice(0, 1);
 }
 
 function setOrDeleteParam(
@@ -161,11 +177,38 @@ function parseEnumParam<TValue extends string>(
 	return isEnumValue(value, allowedValues) ? value : undefined;
 }
 
+function parseSortParam(
+	value: string,
+): { desc: boolean; id: 'name' | 'acquisitionDate' } | undefined {
+	if (!value || value.trim().length === 0) {
+		return undefined;
+	}
+
+	const [rawProperty, rawDirection] = value.split(',', 2);
+	const property = rawProperty?.trim();
+	const direction = rawDirection?.trim().toLowerCase();
+
+	if (property !== 'name' && property !== 'acquisitionDate') {
+		return undefined;
+	}
+
+	if (!direction || direction === 'asc') {
+		return { id: property, desc: false };
+	}
+
+	if (direction === 'desc') {
+		return { id: property, desc: true };
+	}
+
+	return undefined;
+}
+
 export {
 	getColumnFilterValue,
 	readColumnFiltersFromUrl,
 	readPaginationFromUrl,
 	readSearchQueryFromUrl,
+	readSortingFromUrl,
 	resolveAssetsError,
 	setOrDeleteParam,
 };

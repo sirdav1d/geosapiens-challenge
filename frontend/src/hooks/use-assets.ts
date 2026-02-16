@@ -15,6 +15,12 @@ import {
 	normalizeAssetsQueryParams,
 	updateAsset,
 } from '../api/assets';
+import {
+	failMutationToast,
+	startMutationToast,
+	succeedMutationToast,
+	type MutationToastContext,
+} from '../helpers/mutation-toast';
 import type {
 	Asset,
 	AssetsPageResponse,
@@ -35,10 +41,20 @@ export function useAssetsQuery(params: AssetsQueryParams = {}) {
 export function useCreateAssetMutation() {
 	const queryClient = useQueryClient();
 
-	return useMutation<Asset, ApiHttpError, AssetUpsertRequest>({
+	return useMutation<
+		Asset,
+		ApiHttpError,
+		AssetUpsertRequest,
+		MutationToastContext
+	>({
 		mutationFn: createAsset,
-		onSuccess: () => {
+		onMutate: () => startMutationToast('create'),
+		onSuccess: (_data, _variables, context) => {
+			succeedMutationToast('create', context);
 			void queryClient.invalidateQueries({ queryKey: assetsQueryKeys.lists() });
+		},
+		onError: (error, _variables, context) => {
+			failMutationToast('create', error, context);
 		},
 	});
 }
@@ -49,11 +65,17 @@ export function useUpdateAssetMutation() {
 	return useMutation<
 		Asset,
 		ApiHttpError,
-		{ id: number; payload: AssetUpsertRequest }
+		{ id: number; payload: AssetUpsertRequest },
+		MutationToastContext
 	>({
 		mutationFn: ({ id, payload }) => updateAsset(id, payload),
-		onSuccess: () => {
+		onMutate: () => startMutationToast('update'),
+		onSuccess: (_data, _variables, context) => {
+			succeedMutationToast('update', context);
 			void queryClient.invalidateQueries({ queryKey: assetsQueryKeys.lists() });
+		},
+		onError: (error, _variables, context) => {
+			failMutationToast('update', error, context);
 		},
 	});
 }
@@ -61,11 +83,15 @@ export function useUpdateAssetMutation() {
 export function useDeleteAssetMutation() {
 	const queryClient = useQueryClient();
 
-	return useMutation<void, ApiHttpError, number>({
+	return useMutation<void, ApiHttpError, number, MutationToastContext>({
 		mutationFn: deleteAsset,
-		onSuccess: () => {
+		onMutate: () => startMutationToast('delete'),
+		onSuccess: (_data, _variables, context) => {
+			succeedMutationToast('delete', context);
 			void queryClient.invalidateQueries({ queryKey: assetsQueryKeys.lists() });
+		},
+		onError: (error, _variables, context) => {
+			failMutationToast('delete', error, context);
 		},
 	});
 }
-
