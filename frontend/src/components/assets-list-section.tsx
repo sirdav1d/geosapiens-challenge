@@ -30,6 +30,9 @@ import {
 import { ASSETS_TABLE_VIEWPORT_CLASSNAME } from '../constants/assets-table';
 import { DEFAULT_PAGE_INDEX, DEFAULT_PAGE_SIZE } from '../constants/pagination';
 import {
+	areColumnFiltersEqual,
+	arePaginationStatesEqual,
+	areSortingStatesEqual,
 	getColumnFilterValue,
 	readColumnFiltersFromUrl,
 	readPaginationFromUrl,
@@ -100,50 +103,35 @@ export default function AssetsListSection() {
 			return;
 		}
 
-		const params = new URLSearchParams(window.location.search);
-		const searchQuery = immediateQueryText.trim();
+		const handlePopState = () => {
+			const nextPagination = readPaginationFromUrl();
+			const nextSearchQuery = readSearchQueryFromUrl();
+			const nextColumnFilters = readColumnFiltersFromUrl();
+			const nextSorting = readSortingFromUrl();
 
-		setOrDeleteParam(
-			params,
-			ASSETS_URL_PARAM_KEYS.page,
-			pagination.pageIndex > DEFAULT_PAGE_INDEX
-				? String(pagination.pageIndex)
-				: undefined,
-		);
-		setOrDeleteParam(
-			params,
-			ASSETS_URL_PARAM_KEYS.size,
-			pagination.pageSize !== DEFAULT_PAGE_SIZE
-				? String(pagination.pageSize)
-				: undefined,
-		);
-		setOrDeleteParam(
-			params,
-			ASSETS_URL_PARAM_KEYS.query,
-			searchQuery || undefined,
-		);
-		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.category, categoryFilter);
-		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.status, statusFilter);
-		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.sort, sortParams[0]);
+			setPagination((currentPagination) =>
+				arePaginationStatesEqual(currentPagination, nextPagination)
+					? currentPagination
+					: nextPagination,
+			);
+			setGlobalFilter((currentValue) =>
+				currentValue === nextSearchQuery ? currentValue : nextSearchQuery,
+			);
+			setColumnFilters((currentFilters) =>
+				areColumnFiltersEqual(currentFilters, nextColumnFilters)
+					? currentFilters
+					: nextColumnFilters,
+			);
+			setSorting((currentSorting) =>
+				areSortingStatesEqual(currentSorting, nextSorting)
+					? currentSorting
+					: nextSorting,
+			);
+		};
 
-		const nextSearch = params.toString();
-		const currentSearch = window.location.search.replace(/^\?/, '');
-		if (nextSearch === currentSearch) {
-			return;
-		}
-
-		const nextUrl = `${window.location.pathname}${
-			nextSearch ? `?${nextSearch}` : ''
-		}${window.location.hash}`;
-		window.history.replaceState(window.history.state, '', nextUrl);
-	}, [
-		categoryFilter,
-		immediateQueryText,
-		pagination.pageIndex,
-		pagination.pageSize,
-		sortParams,
-		statusFilter,
-	]);
+		window.addEventListener('popstate', handlePopState);
+		return () => window.removeEventListener('popstate', handlePopState);
+	}, []);
 
 	const handleGlobalFilterChange: OnChangeFn<string> = (updaterOrValue) => {
 		setGlobalFilter((previousValue) => {
@@ -209,13 +197,73 @@ export default function AssetsListSection() {
 			status: statusFilter,
 			sort: sortParams.length > 0 ? sortParams : undefined,
 		});
+	const maxPageIndex = data
+		? Math.max(data.totalPages - 1, DEFAULT_PAGE_INDEX)
+		: pagination.pageIndex;
+	const resolvedPagination = useMemo(
+		() => ({
+			...pagination,
+			pageIndex: Math.min(pagination.pageIndex, maxPageIndex),
+		}),
+		[maxPageIndex, pagination],
+	);
+
+	useEffect(() => {
+		if (typeof window === 'undefined') {
+			return;
+		}
+
+		const params = new URLSearchParams(window.location.search);
+		const searchQuery = immediateQueryText.trim();
+
+		setOrDeleteParam(
+			params,
+			ASSETS_URL_PARAM_KEYS.page,
+			resolvedPagination.pageIndex > DEFAULT_PAGE_INDEX
+				? String(resolvedPagination.pageIndex)
+				: undefined,
+		);
+		setOrDeleteParam(
+			params,
+			ASSETS_URL_PARAM_KEYS.size,
+			resolvedPagination.pageSize !== DEFAULT_PAGE_SIZE
+				? String(resolvedPagination.pageSize)
+				: undefined,
+		);
+		setOrDeleteParam(
+			params,
+			ASSETS_URL_PARAM_KEYS.query,
+			searchQuery || undefined,
+		);
+		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.category, categoryFilter);
+		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.status, statusFilter);
+		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.sort, sortParams[0]);
+
+		const nextSearch = params.toString();
+		const currentSearch = window.location.search.replace(/^\?/, '');
+		if (nextSearch === currentSearch) {
+			return;
+		}
+
+		const nextUrl = `${window.location.pathname}${
+			nextSearch ? `?${nextSearch}` : ''
+		}${window.location.hash}`;
+		window.history.replaceState(window.history.state, '', nextUrl);
+	}, [
+		categoryFilter,
+		immediateQueryText,
+		resolvedPagination.pageIndex,
+		resolvedPagination.pageSize,
+		sortParams,
+		statusFilter,
+	]);
 
 	useEffect(() => {
 		if (!data) {
 			return;
 		}
 
-		const nextPage = pagination.pageIndex + 1;
+		const nextPage = resolvedPagination.pageIndex + 1;
 		const hasNextPage = nextPage < data.totalPages;
 		if (!hasNextPage) {
 			return;
@@ -223,7 +271,7 @@ export default function AssetsListSection() {
 
 		const nextPageParams = {
 			page: nextPage,
-			size: pagination.pageSize,
+			size: resolvedPagination.pageSize,
 			q: queryText,
 			category: categoryFilter,
 			status: statusFilter,
@@ -237,10 +285,10 @@ export default function AssetsListSection() {
 	}, [
 		categoryFilter,
 		data,
-		pagination.pageIndex,
-		pagination.pageSize,
 		queryClient,
 		queryText,
+		resolvedPagination.pageIndex,
+		resolvedPagination.pageSize,
 		sortParams,
 		statusFilter,
 	]);
@@ -314,7 +362,7 @@ export default function AssetsListSection() {
 							columnFilters={columnFilters}
 							onGlobalFilterChange={handleGlobalFilterChange}
 							onColumnFiltersChange={handleColumnFiltersChange}
-							pagination={pagination}
+							pagination={resolvedPagination}
 							onPaginationChange={handlePaginationChange}
 							sorting={sorting}
 							onSortingChange={handleSortingChange}

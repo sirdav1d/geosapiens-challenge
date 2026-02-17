@@ -1,8 +1,9 @@
 /** @format */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { flushSync } from 'react-dom';
+import { useTheme } from '@/hooks/use-theme';
 
 import { cn } from '@/lib/utils';
 
@@ -15,36 +16,45 @@ export const AnimatedThemeToggler = ({
 	duration = 400,
 	...props
 }: AnimatedThemeTogglerProps) => {
-	const [isDark, setIsDark] = useState(false);
+	const { resolvedTheme, setTheme } = useTheme();
 	const buttonRef = useRef<HTMLButtonElement>(null);
 
-	useEffect(() => {
-		const updateTheme = () => {
-			setIsDark(document.documentElement.classList.contains('dark'));
-		};
-
-		updateTheme();
-
-		const observer = new MutationObserver(updateTheme);
-		observer.observe(document.documentElement, {
-			attributes: true,
-			attributeFilter: ['class'],
-		});
-
-		return () => observer.disconnect();
-	}, []);
+	const isDark = resolvedTheme === 'dark';
 
 	const toggleTheme = useCallback(async () => {
-		if (!buttonRef.current) return;
-
-		await document.startViewTransition(() => {
+		const nextTheme = isDark ? 'light' : 'dark';
+		const applyTheme = () => {
 			flushSync(() => {
-				const newTheme = !isDark;
-				setIsDark(newTheme);
-				document.documentElement.classList.toggle('dark');
-				localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+				setTheme(nextTheme);
 			});
-		}).ready;
+		};
+
+		if (!buttonRef.current) {
+			applyTheme();
+			return;
+		}
+
+		const supportsViewTransition =
+			'startViewTransition' in document &&
+			typeof (document as Document & { startViewTransition?: unknown })
+				.startViewTransition === 'function';
+		const prefersReducedMotion = window.matchMedia(
+			'(prefers-reduced-motion: reduce)',
+		).matches;
+
+		if (!supportsViewTransition || prefersReducedMotion) {
+			applyTheme();
+			return;
+		}
+
+		const transition = (
+			document as Document & {
+				startViewTransition: (updateCallback: () => void) => {
+					ready: Promise<void>;
+				};
+			}
+		).startViewTransition(applyTheme);
+		await transition.ready;
 
 		const { top, left, width, height } =
 			buttonRef.current.getBoundingClientRect();
@@ -68,11 +78,12 @@ export const AnimatedThemeToggler = ({
 				pseudoElement: '::view-transition-new(root)',
 			},
 		);
-	}, [isDark, duration]);
+	}, [duration, isDark, setTheme]);
 
 	return (
 		<button
 			ref={buttonRef}
+			type='button'
 			onClick={toggleTheme}
 			className={cn(className, 'cursor-pointer')}
 			{...props}>

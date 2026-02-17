@@ -106,6 +106,9 @@ const emptyFormValues: AssetUpsertFormInput = {
 	acquisitionDate: '',
 };
 
+const CATEGORY_PLACEHOLDER_VALUE = '__CATEGORY_PLACEHOLDER__';
+const STATUS_PLACEHOLDER_VALUE = '__STATUS_PLACEHOLDER__';
+
 const assetUpsertFormFields =
 	ASSET_CREATE_FIELDS as readonly AssetUpsertField[];
 
@@ -314,8 +317,12 @@ export default function AssetUpsertSheet({
 									Categoria
 								</label>
 								<Select
-									value={field.value || undefined}
-									onValueChange={field.onChange}
+									value={field.value || CATEGORY_PLACEHOLDER_VALUE}
+									onValueChange={(nextValue) =>
+										field.onChange(
+											nextValue === CATEGORY_PLACEHOLDER_VALUE ? '' : nextValue,
+										)
+									}
 									disabled={isSubmitting}>
 									<SelectTrigger
 										className='w-full'
@@ -324,6 +331,11 @@ export default function AssetUpsertSheet({
 										<SelectValue placeholder='Selecione uma categoria' />
 									</SelectTrigger>
 									<SelectContent>
+										<SelectItem
+											value={CATEGORY_PLACEHOLDER_VALUE}
+											disabled>
+											Selecione uma categoria
+										</SelectItem>
 										{CATEGORY_VALUES.map((category) => {
 											const CategoryIcon = CATEGORY_ICONS[category];
 
@@ -363,8 +375,12 @@ export default function AssetUpsertSheet({
 									Status
 								</label>
 								<Select
-									value={field.value || undefined}
-									onValueChange={field.onChange}
+									value={field.value || STATUS_PLACEHOLDER_VALUE}
+									onValueChange={(nextValue) =>
+										field.onChange(
+											nextValue === STATUS_PLACEHOLDER_VALUE ? '' : nextValue,
+										)
+									}
 									disabled={isSubmitting}>
 									<SelectTrigger
 										className='w-full'
@@ -373,6 +389,11 @@ export default function AssetUpsertSheet({
 										<SelectValue placeholder='Selecione um status' />
 									</SelectTrigger>
 									<SelectContent>
+										<SelectItem
+											value={STATUS_PLACEHOLDER_VALUE}
+											disabled>
+											Selecione um status
+										</SelectItem>
 										{STATUS_VALUES.map((status) => (
 											<SelectItem
 												key={status}

@@ -15,10 +15,16 @@ export default function App() {
 			<header className='mb-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
 				<AnimatedThemeToggler className='md:hidden' />
 				<div>
-					<h1 className='text-3xl font-semibold tracking-tight'>
-						GeoSapiens Ativos
-					</h1>
-					<p className='mt-2 text-sm text-muted-foreground'>
+					<div className='flex items-center gap-5'>
+						<img width={40}
+							alt='geosapiens logo'
+							src='/favicon.png'
+						/>
+						<h1 className='text-3xl font-semibold tracking-tight'>
+							GeoSapiens
+						</h1>
+					</div>
+					<p className='mt-5 text-sm text-muted-foreground'>
 						Gerenciamento e listagem completa de ativos
 					</p>
 				</div>

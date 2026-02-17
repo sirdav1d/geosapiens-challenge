@@ -34,6 +34,51 @@ function getColumnFilterValue<TValue extends string>(
 	return filter.value as TValue;
 }
 
+function areColumnFiltersEqual(
+	current: ColumnFiltersState,
+	next: ColumnFiltersState,
+): boolean {
+	if (current.length !== next.length) {
+		return false;
+	}
+
+	return current.every((item, index) => {
+		const compared = next[index];
+		return (
+			compared !== undefined &&
+			item.id === compared.id &&
+			item.value === compared.value
+		);
+	});
+}
+
+function arePaginationStatesEqual(
+	current: PaginationState,
+	next: PaginationState,
+): boolean {
+	return (
+		current.pageIndex === next.pageIndex && current.pageSize === next.pageSize
+	);
+}
+
+function areSortingStatesEqual(
+	current: SortingState,
+	next: SortingState,
+): boolean {
+	if (current.length !== next.length) {
+		return false;
+	}
+
+	return current.every((item, index) => {
+		const compared = next[index];
+		return (
+			compared !== undefined &&
+			item.id === compared.id &&
+			item.desc === compared.desc
+		);
+	});
+}
+
 function readPaginationFromUrl(): PaginationState {
 	const params = getUrlSearchParams();
 	const pageIndex = parseIntegerParam(params.get(ASSETS_URL_PARAM_KEYS.page));
@@ -204,6 +249,9 @@ function parseSortParam(
 }
 
 export {
+	areColumnFiltersEqual,
+	arePaginationStatesEqual,
+	areSortingStatesEqual,
 	getColumnFilterValue,
 	readColumnFiltersFromUrl,
 	readPaginationFromUrl,
