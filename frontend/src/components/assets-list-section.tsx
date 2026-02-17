@@ -8,12 +8,15 @@ import type {
 } from '@tanstack/react-table';
 import { functionalUpdate } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { AlertCircleIcon } from 'lucide-react';
 import {
-	assetsQueryKeys,
-	fetchAssets,
-} from '../api/assets';
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+	type ReactNode,
+} from 'react';
+import { AlertCircleIcon } from 'lucide-react';
+import { assetsQueryKeys, fetchAssets } from '../api/assets';
 import {
 	type ApiFieldError,
 	type Asset,
@@ -24,10 +27,8 @@ import {
 	ASSETS_URL_PARAM_KEYS,
 	SEARCH_DEBOUNCE_IN_MS,
 } from '../constants/assets-list';
-import {
-	DEFAULT_PAGE_INDEX,
-	DEFAULT_PAGE_SIZE,
-} from '../constants/pagination';
+import { ASSETS_TABLE_VIEWPORT_CLASSNAME } from '../constants/assets-table';
+import { DEFAULT_PAGE_INDEX, DEFAULT_PAGE_SIZE } from '../constants/pagination';
 import {
 	getColumnFilterValue,
 	readColumnFiltersFromUrl,
@@ -64,7 +65,9 @@ export default function AssetsListSection() {
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() =>
 		readColumnFiltersFromUrl(),
 	);
-	const [sorting, setSorting] = useState<SortingState>(() => readSortingFromUrl());
+	const [sorting, setSorting] = useState<SortingState>(() =>
+		readSortingFromUrl(),
+	);
 
 	const categoryFilter = getColumnFilterValue<Category>(
 		columnFilters,
@@ -81,7 +84,10 @@ export default function AssetsListSection() {
 			? undefined
 			: debouncedQueryText || undefined;
 	const sortParams = useMemo(
-		() => sorting.map((sortItem) => `${sortItem.id},${sortItem.desc ? 'desc' : 'asc'}`),
+		() =>
+			sorting.map(
+				(sortItem) => `${sortItem.id},${sortItem.desc ? 'desc' : 'asc'}`,
+			),
 		[sorting],
 	);
 	const hasActiveFilters =
@@ -111,7 +117,11 @@ export default function AssetsListSection() {
 				? String(pagination.pageSize)
 				: undefined,
 		);
-		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.query, searchQuery || undefined);
+		setOrDeleteParam(
+			params,
+			ASSETS_URL_PARAM_KEYS.query,
+			searchQuery || undefined,
+		);
 		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.category, categoryFilter);
 		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.status, statusFilter);
 		setOrDeleteParam(params, ASSETS_URL_PARAM_KEYS.sort, sortParams[0]);
@@ -169,7 +179,10 @@ export default function AssetsListSection() {
 
 	const handleSortingChange: OnChangeFn<SortingState> = (updaterOrValue) => {
 		setSorting((previousSorting) => {
-			const nextSorting = functionalUpdate(updaterOrValue, previousSorting).slice(0, 1);
+			const nextSorting = functionalUpdate(
+				updaterOrValue,
+				previousSorting,
+			).slice(0, 1);
 			setPagination((previousPagination) => ({
 				...previousPagination,
 				pageIndex: 0,
@@ -282,10 +295,6 @@ export default function AssetsListSection() {
 	} else {
 		content = (
 			<>
-				{isFetching && data && (
-					<p className='text-sm text-muted-foreground'>Atualizando ativos...</p>
-				)}
-
 				{isError && data && errorState && (
 					<Alert variant='destructive'>
 						<AlertCircleIcon />
@@ -312,6 +321,7 @@ export default function AssetsListSection() {
 							totalElements={data.totalElements}
 							totalPages={data.totalPages}
 							hasActiveFilters={hasActiveFilters}
+							isFetching={isFetching}
 							onClearFilters={handleClearFilters}
 						/>
 					</div>
@@ -380,7 +390,7 @@ function AssetsListErrorState({
 
 function AssetsListLoadingState() {
 	return (
-		<section className='space-y-4'>
+		<section className='space-y-3'>
 			<div className='flex flex-col gap-3 md:flex-row md:items-center'>
 				<Skeleton className='h-9 w-full md:max-w-sm' />
 				<div className='flex flex-col gap-2 sm:flex-row md:ml-auto'>
@@ -389,12 +399,25 @@ function AssetsListLoadingState() {
 					<Skeleton className='h-9 w-full sm:w-[88px]' />
 				</div>
 			</div>
-			<div className='space-y-2 rounded-lg border p-4'>
+			<div
+				className={`space-y-2 rounded-lg border p-4 ${ASSETS_TABLE_VIEWPORT_CLASSNAME}`}>
 				<Skeleton className='h-8 w-full' />
-				<Skeleton className='h-8 w-full' />
-				<Skeleton className='h-8 w-full' />
-				<Skeleton className='h-8 w-full' />
-				<Skeleton className='h-8 w-full' />
+				{Array.from({ length: 10 }).map((_, index) => (
+					<Skeleton
+						key={`asset-table-loading-row-${index}`}
+						className='h-8 w-full'
+					/>
+				))}
+			</div>
+			<div className='flex min-h-12 w-full flex-col gap-3 pt-3 md:flex-row md:items-center md:justify-between'>
+				<div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3'>
+					<div className='flex w-full items-center gap-2'>
+						<Skeleton className='h-4 w-24' />
+						<Skeleton className='h-8 w-20' />
+					</div>
+					<Skeleton className='h-4 w-44' />
+				</div>
+				<Skeleton className='h-9 w-full md:w-80' />
 			</div>
 		</section>
 	);

@@ -24,13 +24,22 @@ import {
 import { CATEGORY_ICONS } from '../../constants/category-icons';
 import {
 	ASSETS_TABLE_MAX_VISIBLE_PAGES,
+	ASSETS_TABLE_EMPTY_MIN_HEIGHT_CLASSNAME,
 	ASSETS_TABLE_ROW_CLASSNAME,
 	ASSETS_TABLE_ROW_LAYOUT_TRANSITION,
 	ASSETS_TABLE_ROW_OPACITY_TRANSITION,
+	ASSETS_TABLE_VIEWPORT_CLASSNAME,
 } from '../../constants/assets-table';
 import { PAGE_SIZE_OPTIONS } from '../../constants/pagination';
 import { buildPageWindow } from '../../helpers/pagination';
 import { Button } from '../ui/button';
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyTitle,
+} from '../ui/empty';
 import { Input } from '../ui/input';
 import {
 	Pagination,
@@ -57,6 +66,7 @@ import {
 	TableRow,
 } from '../ui/table';
 import { XIcon } from '../ui/x';
+import { SearchIcon } from '../ui/search';
 
 type DataTableProps = {
 	columnFilters: ColumnFiltersState;
@@ -64,6 +74,7 @@ type DataTableProps = {
 	data: Asset[];
 	globalFilter: string;
 	hasActiveFilters: boolean;
+	isFetching: boolean;
 	onColumnFiltersChange: OnChangeFn<ColumnFiltersState>;
 	onClearFilters: () => void;
 	onGlobalFilterChange: OnChangeFn<string>;
@@ -81,6 +92,7 @@ export default function DataTable({
 	data,
 	globalFilter,
 	hasActiveFilters,
+	isFetching,
 	onColumnFiltersChange,
 	onClearFilters,
 	onGlobalFilterChange,
@@ -226,7 +238,14 @@ export default function DataTable({
 			<motion.div
 				layoutScroll
 				layoutDependency={tableLayoutDependency}
-				className='overflow-hidden rounded-lg border bg-card max-h-[34vh] md:max-h-[64vh] 2xl:max-h-[70vh] h-full overflow-y-auto'>
+				className={`relative overflow-hidden rounded-lg border bg-card overflow-y-auto ${ASSETS_TABLE_VIEWPORT_CLASSNAME}`}>
+				<div
+					className={[
+						'pointer-events-none absolute top-2 right-3 z-10 text-xs text-muted-foreground transition-opacity duration-150',
+						isFetching ? 'opacity-100' : 'opacity-0',
+					].join(' ')}>
+					Atualizando ativos...
+				</div>
 				<Table>
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
@@ -250,22 +269,33 @@ export default function DataTable({
 								<TableRow>
 									<TableCell
 										colSpan={columns.length}
-										className='h-24 text-center text-muted-foreground'>
-										<div className='flex flex-col items-center gap-2 py-2'>
-											<p>
-												{hasActiveFilters
-													? 'Nenhum ativo encontrado para os filtros aplicados.'
-													: 'Ainda não existem ativos para exibição.'}
-											</p>
+										className='p-0 text-center text-muted-foreground'>
+										<Empty
+											className={`m-4 border ${ASSETS_TABLE_EMPTY_MIN_HEIGHT_CLASSNAME}`}>
+											<EmptyHeader>
+												<EmptyTitle className='flex flex-col items-center gap-2'>
+													<SearchIcon />
+													{hasActiveFilters
+														? 'Nenhum ativo encontrado'
+														: 'Sem ativos para exibição'}
+												</EmptyTitle>
+												<EmptyDescription>
+													{hasActiveFilters
+														? 'Ajuste ou limpe os filtros para visualizar outros resultados.'
+														: 'Cadastre um novo ativo para começar a preencher a tabela.'}
+												</EmptyDescription>
+											</EmptyHeader>
 											{hasActiveFilters && (
-												<Button
-													variant='outline'
-													size='sm'
-													onClick={onClearFilters}>
-													Limpar filtros
-												</Button>
+												<EmptyContent>
+													<Button
+														variant='outline'
+														size='sm'
+														onClick={onClearFilters}>
+														Limpar filtros
+													</Button>
+												</EmptyContent>
 											)}
-										</div>
+										</Empty>
 									</TableCell>
 								</TableRow>
 							) : (
@@ -305,7 +335,7 @@ export default function DataTable({
 				</Table>
 			</motion.div>
 
-			<div className='flex flex-col gap-3 pt-3 md:flex-row md:items-center md:justify-between w-full'>
+			<div className='flex min-h-12 w-full flex-col gap-3 pt-3 md:flex-row md:items-center md:justify-between'>
 				<div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3'>
 					<div className='flex w-full items-center gap-2'>
 						<span className='text-sm text-muted-foreground'>
@@ -346,9 +376,9 @@ export default function DataTable({
 					</p>
 				</div>
 
-				{totalPages > 1 && (
-					<div className='overflow-x-auto'>
-						<Pagination className='mx-0 md:w-max min-w-full justify-between  md:min-w-0 md:justify-end'>
+				<div className='min-h-9 overflow-x-auto'>
+					{totalPages > 1 ? (
+						<Pagination className='mx-0 min-w-full justify-between md:w-max md:min-w-0 md:justify-end'>
 							<PaginationContent>
 								<PaginationItem>
 									<PaginationPrevious
@@ -403,8 +433,13 @@ export default function DataTable({
 								</PaginationItem>
 							</PaginationContent>
 						</Pagination>
-					</div>
-				)}
+					) : (
+						<div
+							aria-hidden='true'
+							className='h-9'
+						/>
+					)}
+				</div>
 			</div>
 		</div>
 	);
