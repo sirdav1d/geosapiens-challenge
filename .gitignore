@@ -47,3 +47,6 @@ frontend/.env.*.local
 
 
 node_modules
+
+# Local (not versioned): study/report notes
+RELATORIO-ESTUDO.md
