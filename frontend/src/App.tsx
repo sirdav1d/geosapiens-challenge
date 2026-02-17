@@ -13,6 +13,7 @@ export default function App() {
 	return (
 		<main className='mx-auto max-h-screen max-w-6xl px-6 py-12'>
 			<header className='mb-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
+				<AnimatedThemeToggler className='md:hidden' />
 				<div>
 					<h1 className='text-3xl font-semibold tracking-tight'>
 						GeoSapiens Ativos
@@ -23,7 +24,7 @@ export default function App() {
 				</div>
 				<div className='flex items-center gap-5'>
 					<AssetCreateSheet />
-					<AnimatedThemeToggler />
+					<AnimatedThemeToggler className='max-md:hidden' />
 				</div>
 			</header>
 

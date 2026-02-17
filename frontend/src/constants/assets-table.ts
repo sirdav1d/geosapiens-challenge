@@ -15,7 +15,7 @@ const ASSETS_TABLE_ROW_OPACITY_TRANSITION = {
 	ease: 'easeOut',
 } as const;
 
-const ASSETS_TABLE_MAX_VISIBLE_PAGES = 5;
+const ASSETS_TABLE_MAX_VISIBLE_PAGES = 4;
 const ASSETS_TABLE_VIEWPORT_CLASSNAME = 'h-[34vh] md:h-[60vh]';
 const ASSETS_TABLE_EMPTY_MIN_HEIGHT_CLASSNAME = 'h-[24vh] md:h-[50vh]';
 

@@ -9,7 +9,7 @@ export default function AssetCreateSheet() {
 		<AssetUpsertSheet
 			mode='create'
 			trigger={
-				<Button className='gap-2'>
+				<Button className='gap-2 max-md:w-full'>
 					<PlusIcon className='size-4' />
 					Novo ativo
 				</Button>
